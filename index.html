@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1014,11 +1015,26 @@ input,textarea{-webkit-user-select:text!important;user-select:text!important;fon
     <div class="auth-sub" id="auth-sub-txt">Sign in to continue your streak</div>
     <div class="auth-err" id="auth-err"></div>
     <div class="auth-field-label">Username</div>
-    <input class="auth-input" id="auth-user" placeholder="Enter username" maxlength="18" autocomplete="username" spellcheck="false" onkeydown="if(event.key==='Enter')document.getElementById('auth-pass').focus()">
+    <input class="auth-input" id="auth-user" placeholder="Enter username" maxlength="18" autocomplete="username" spellcheck="false" onkeydown="if(event.key==='Enter')authNextField()">
+    <div id="email-field-wrap" style="display:none">
+      <div class="auth-field-label">Gmail / Email</div>
+      <input class="auth-input" id="auth-email" placeholder="Enter your email" type="email" maxlength="80" autocomplete="email" onkeydown="if(event.key==='Enter')document.getElementById('auth-pass').focus()">
+    </div>
     <div class="auth-field-label">Password</div>
     <input class="auth-input" id="auth-pass" placeholder="Enter password" type="password" maxlength="30" autocomplete="current-password" onkeydown="if(event.key==='Enter')doAuth()">
     <button class="btn-primary" id="auth-cta" onclick="doAuth()">Sign In &rarr;</button>
     <div class="auth-switch" id="auth-switch" onclick="toggleAuth()">No account? <b>Create one</b></div>
+  </div>
+
+  <!-- OTP Verification Box -->
+  <div class="auth-box" id="otp-box" style="display:none">
+    <div class="auth-h">Check your email 📬</div>
+    <div class="auth-sub" id="otp-sub-txt">We sent a 6-digit OTP to your email</div>
+    <div class="auth-err" id="otp-err"></div>
+    <div class="auth-field-label">Enter OTP</div>
+    <input class="auth-input" id="otp-input" placeholder="e.g. 123456" type="number" maxlength="6" inputmode="numeric" style="letter-spacing:6px;font-size:22px;text-align:center" onkeydown="if(event.key==='Enter')verifyOTP()">
+    <button class="btn-primary" id="otp-cta" onclick="verifyOTP()">Verify &rarr;</button>
+    <div class="auth-switch" onclick="cancelOTP()">← Back to login</div>
   </div>
 </div>
 
@@ -2709,11 +2725,63 @@ var sfx={
 };
 
 // ════════════════════════════════════════════
-// MULTI-USER STORAGE
+// SUPABASE SETUP
+// ════════════════════════════════════════════
+// 🔧 REPLACE THESE with your actual Supabase project credentials:
+//    Go to https://supabase.com → Your Project → Settings → API
+var SUPABASE_URL = 'https://cttuxgpyawakicmfxtrc.supabase.co';
+var SUPABASE_ANON_KEY = 'sb_publishable_lyYM90zAVwtQYusxoUEQuw_upakHpNt';
+
+var _sb = null;
+function getSupabase(){
+  if(!_sb){
+    _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+  return _sb;
+}
+
+// ════════════════════════════════════════════
+// MULTI-USER STORAGE (localStorage + Supabase sync)
 // ════════════════════════════════════════════
 var DB={};
 (function(){try{var s=localStorage.getItem('mqpro_v3');if(s)DB=JSON.parse(s)}catch(e){}})();
-function save(){try{localStorage.setItem('mqpro_v3',JSON.stringify(DB))}catch(e){}}
+function save(){
+  try{localStorage.setItem('mqpro_v3',JSON.stringify(DB))}catch(e){}
+  // Sync current user data to Supabase if logged in
+  if(CU && SUPABASE_URL.indexOf('YOUR_PROJECT_ID')===-1){
+    syncUserDataToSupabase();
+  }
+}
+
+// Sync user game data to Supabase profiles table
+async function syncUserDataToSupabase(){
+  try{
+    var sb = getSupabase();
+    var {data:{user}} = await sb.auth.getUser();
+    if(!user) return;
+    var userData = DB[CU] || {};
+    await sb.from('profiles').upsert({
+      id: user.id,
+      username: CU,
+      game_data: userData,
+      updated_at: new Date().toISOString()
+    }, {onConflict:'id'});
+  }catch(e){ console.warn('Supabase sync error:', e.message); }
+}
+
+// Load user data from Supabase after login
+async function loadUserDataFromSupabase(username){
+  try{
+    var sb = getSupabase();
+    var {data:{user}} = await sb.auth.getUser();
+    if(!user) return;
+    var {data,error} = await sb.from('profiles').select('game_data').eq('id',user.id).single();
+    if(data && data.game_data){
+      DB[username] = Object.assign({}, data.game_data);
+      localStorage.setItem('mqpro_v3',JSON.stringify(DB));
+    }
+  }catch(e){ console.warn('Supabase load error:', e.message); }
+}
 
 var CU=null; // current username key
 function uGet(k,d){var u=DB[CU];return(u&&u[k]!==undefined)?u[k]:d}
@@ -2744,48 +2812,202 @@ function setAvatarEl(el,username){
 }
 
 // ════════════════════════════════════════════
-// AUTH
+// AUTH (Supabase + OTP)
 // ════════════════════════════════════════════
 var authMode='login';
+var _pendingUser=''; // store username while OTP is being verified
+
 function toggleAuth(){
   authMode=authMode==='login'?'register':'login';
   var isReg=authMode==='register';
   document.getElementById('auth-h').textContent=isReg?'Create account':'Welcome back';
-  document.getElementById('auth-sub-txt').textContent=isReg?'Pick a unique username & password':'Sign in to continue your streak';
+  document.getElementById('auth-sub-txt').textContent=isReg?'Pick a username, email & password':'Sign in to continue your streak';
   document.getElementById('auth-cta').innerHTML=isReg?'Create Account &rarr;':'Sign In &rarr;';
   document.getElementById('auth-switch').innerHTML=isReg?'Have an account? <b>Sign in</b>':'No account? <b>Create one</b>';
   document.getElementById('auth-err').textContent='';
+  // Show/hide email field
+  document.getElementById('email-field-wrap').style.display=isReg?'block':'none';
+  document.getElementById('auth-email').value='';
 }
-function doAuth(){
+
+function authNextField(){
+  if(authMode==='register'){
+    document.getElementById('auth-email').focus();
+  } else {
+    document.getElementById('auth-pass').focus();
+  }
+}
+
+// Show OTP box, hide auth box
+function showOTPBox(email){
+  document.getElementById('auth-box').style.display='none';
+  document.getElementById('otp-box').style.display='block';
+  document.getElementById('otp-sub-txt').textContent='We sent a 6-digit OTP to '+email;
+  document.getElementById('otp-input').value='';
+  document.getElementById('otp-err').textContent='';
+  setTimeout(()=>document.getElementById('otp-input').focus(),200);
+}
+
+function cancelOTP(){
+  document.getElementById('otp-box').style.display='none';
+  document.getElementById('auth-box').style.display='block';
+  var ctaBtn=document.getElementById('auth-cta');
+  ctaBtn.disabled=false;
+  ctaBtn.innerHTML=authMode==='register'?'Create Account &rarr;':'Sign In &rarr;';
+}
+
+async function verifyOTP(){
+  var otp=document.getElementById('otp-input').value.trim();
+  var errEl=document.getElementById('otp-err');
+  errEl.textContent='';
+  if(!otp||otp.length<6){errEl.textContent='Please enter the 6-digit OTP.';return}
+  var otpBtn=document.getElementById('otp-cta');
+  otpBtn.disabled=true;
+  otpBtn.innerHTML='<span style="opacity:.6">Verifying...</span>';
+  try{
+    var sb=getSupabase();
+    var email=document.getElementById('auth-email').value.trim().toLowerCase();
+    // For login OTP flow, email comes from stored value
+    if(authMode==='login') email=_pendingEmail||'';
+    var {data,error}=await sb.auth.verifyOtp({email, token:otp, type: authMode==='register'?'signup':'email'});
+    if(error){errEl.textContent='Invalid or expired OTP. Try again.';otpBtn.disabled=false;otpBtn.innerHTML='Verify &rarr;';return}
+    // OTP verified — finalize login
+    var user=_pendingUser;
+    if(authMode==='register'){
+      if(data.user){
+        await sb.from('profiles').upsert({
+          id:data.user.id,
+          username:user,
+          email:_pendingEmail,
+          game_data:{username:user},
+          updated_at:new Date().toISOString()
+        },{onConflict:'id'});
+      }
+    }
+    if(!DB[user])DB[user]={username:user};
+    localStorage.setItem('mqpro_v3',JSON.stringify(DB));
+    CU=user;
+    uSet('username',user);
+    if(authMode==='login') await loadUserDataFromSupabase(user);
+    showToast(authMode==='register'?'Account created! Welcome, '+user+' 🎉':'Welcome back, '+user+'! 🔥');
+    goPage('home-scr');
+  }catch(e){
+    errEl.textContent='Network error. Try again.';
+    otpBtn.disabled=false;
+    otpBtn.innerHTML='Verify &rarr;';
+  }
+}
+
+var _pendingEmail='';
+
+async function doAuth(){
   var user=document.getElementById('auth-user').value.trim().toLowerCase();
   var pass=document.getElementById('auth-pass').value;
   var errEl=document.getElementById('auth-err');
   errEl.textContent='';
-  if(!user||!pass){errEl.textContent='Please fill in both fields.';return}
+  if(!user||!pass){errEl.textContent='Please fill in all fields.';return}
   if(user.length<2){errEl.textContent='Username must be at least 2 characters.';return}
   if(!/^[a-z0-9_]+$/.test(user)){errEl.textContent='Only letters, numbers and _ allowed.';return}
   if(pass.length<3){errEl.textContent='Password must be at least 3 characters.';return}
-  var authKey='__auth__'+user;
-  if(authMode==='register'){
-    if(DB[authKey]){errEl.textContent='Username already taken! Try another.';return}
-    DB[authKey]={pw:pass};
-    DB[user]={username:user};
-    save();
-    showToast('Account created! Welcome, '+user+' <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;"><path d="m12 8-9.04 9.06a2.82 2.82 0 1 0 3.98 3.98L16 12"/><circle cx="17" cy="7" r="5"/></svg>');
+
+  var ctaBtn=document.getElementById('auth-cta');
+  ctaBtn.disabled=true;
+  ctaBtn.innerHTML='<span style="opacity:.6">Loading...</span>';
+
+  var useSupabase = SUPABASE_URL.indexOf('YOUR_PROJECT_ID')===-1;
+
+  if(useSupabase){
+    try{
+      var sb=getSupabase();
+      if(authMode==='register'){
+        // Require real email
+        var email=document.getElementById('auth-email').value.trim().toLowerCase();
+        if(!email||!email.includes('@')){errEl.textContent='Please enter a valid email.';ctaBtn.disabled=false;ctaBtn.innerHTML='Create Account &rarr;';return}
+        _pendingUser=user;
+        _pendingEmail=email;
+        var {data,error}=await sb.auth.signUp({email, password:pass, options:{data:{username:user}}});
+        if(error){
+          if(error.message.includes('already registered')) errEl.textContent='Email already in use. Try signing in.';
+          else errEl.textContent=error.message;
+          ctaBtn.disabled=false;ctaBtn.innerHTML='Create Account &rarr;';return;
+        }
+        // Supabase sends OTP/confirmation email automatically
+        showToast('OTP sent to '+email+' 📬');
+        showOTPBox(email);
+      } else {
+        // Login: use stored email from profiles table if possible, else fallback fake email
+        // First try to find user's real email via profiles
+        var {data:profile}=await sb.from('profiles').select('email').eq('username',user).maybeSingle();
+        var email=(profile&&profile.email)?profile.email:user+'@mathiqpro.app';
+        _pendingUser=user;
+        _pendingEmail=email;
+        var {data,error}=await sb.auth.signInWithPassword({email, password:pass});
+        if(error){errEl.textContent='Wrong username or password.';ctaBtn.disabled=false;ctaBtn.innerHTML='Sign In &rarr;';return}
+        // Login success — no OTP needed for password login
+        CU=user;
+        if(!DB[CU])DB[CU]={username:user};
+        await loadUserDataFromSupabase(user);
+        showToast('Welcome back, '+user+'! 🔥');
+        goPage('home-scr');
+        ctaBtn.disabled=false;ctaBtn.innerHTML='Sign In &rarr;';
+      }
+    }catch(e){
+      errEl.textContent='Network error. Try again.';
+      ctaBtn.disabled=false;
+      ctaBtn.innerHTML=authMode==='register'?'Create Account &rarr;':'Sign In &rarr;';
+    }
   } else {
-    if(!DB[authKey]||DB[authKey].pw!==pass){errEl.textContent='Wrong username or password.';return}
+    // ── Fallback: local auth (no Supabase configured) ──
+    var authKey='__auth__'+user;
+    if(authMode==='register'){
+      if(DB[authKey]){errEl.textContent='Username already taken! Try another.';ctaBtn.disabled=false;ctaBtn.innerHTML='Create Account &rarr;';return}
+      DB[authKey]={pw:pass};
+      DB[user]={username:user};
+      save();
+      showToast('Account created! Welcome, '+user+' 🎉');
+    } else {
+      if(!DB[authKey]||DB[authKey].pw!==pass){errEl.textContent='Wrong username or password.';ctaBtn.disabled=false;ctaBtn.innerHTML='Sign In &rarr;';return}
+    }
+    CU=user;
+    uSet('username',user);
+    goPage('home-scr');
+    ctaBtn.disabled=false;
+    ctaBtn.innerHTML=authMode==='register'?'Create Account &rarr;':'Sign In &rarr;';
   }
-  CU=user;
-  uSet('username',user);
-  goPage('home-scr');
 }
-function doLogout(){
+
+async function doLogout(){
+  var useSupabase = SUPABASE_URL.indexOf('YOUR_PROJECT_ID')===-1;
+  if(useSupabase){
+    try{ await getSupabase().auth.signOut(); }catch(e){}
+  }
   CU=null;
   document.getElementById('auth-user').value='';
   document.getElementById('auth-pass').value='';
   document.getElementById('auth-err').textContent='';
   goPage('splash-scr');
 }
+
+// Restore session on page load if Supabase is configured
+(async function restoreSession(){
+  var useSupabase = SUPABASE_URL.indexOf('YOUR_PROJECT_ID')===-1;
+  if(!useSupabase) return;
+  try{
+    var sb = getSupabase();
+    var {data:{session}} = await sb.auth.getSession();
+    if(session && session.user){
+      // Get username from profiles table
+      var {data} = await sb.from('profiles').select('username,game_data').eq('id',session.user.id).single();
+      if(data && data.username){
+        CU = data.username;
+        if(data.game_data) DB[CU] = data.game_data;
+        localStorage.setItem('mqpro_v3',JSON.stringify(DB));
+        // Navigate to home after a brief delay so the app initialises
+        setTimeout(function(){ if(CU) goPage('home-scr'); }, 400);
+      }
+    }
+  }catch(e){ console.warn('Session restore error:', e.message); }
+})();
 
 // ════════════════════════════════════════════
 // LEVELS
