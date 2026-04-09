@@ -1011,19 +1011,18 @@ input,textarea{-webkit-user-select:text!important;user-select:text!important;fon
   </div>
 
   <div class="auth-box" id="auth-box">
-    <div class="auth-h" id="auth-h">Welcome back</div>
-    <div class="auth-sub" id="auth-sub-txt">Sign in to continue your streak</div>
+    <div class="auth-h" id="auth-h">Create Account</div>
+    <div class="auth-sub" id="auth-sub-txt">Register to start your math journey 🚀</div>
     <div class="auth-err" id="auth-err"></div>
     <div class="auth-field-label">Username</div>
     <input class="auth-input" id="auth-user" placeholder="Enter username" maxlength="18" autocomplete="username" spellcheck="false" onkeydown="if(event.key==='Enter')authNextField()">
-    <div id="email-field-wrap" style="display:none">
+    <div id="email-field-wrap">
       <div class="auth-field-label">Gmail / Email</div>
       <input class="auth-input" id="auth-email" placeholder="Enter your email" type="email" maxlength="80" autocomplete="email" onkeydown="if(event.key==='Enter')document.getElementById('auth-pass').focus()">
     </div>
     <div class="auth-field-label">Password</div>
     <input class="auth-input" id="auth-pass" placeholder="Enter password" type="password" maxlength="30" autocomplete="current-password" onkeydown="if(event.key==='Enter')doAuth()">
-    <button class="btn-primary" id="auth-cta" onclick="doAuth()">Sign In &rarr;</button>
-    <div class="auth-switch" id="auth-switch" onclick="toggleAuth()">No account? <b>Create one</b></div>
+    <button class="btn-primary" id="auth-cta" onclick="doAuth()">Create Account &rarr;</button>
   </div>
 
   <!-- OTP Verification Box -->
@@ -1032,7 +1031,7 @@ input,textarea{-webkit-user-select:text!important;user-select:text!important;fon
     <div class="auth-sub" id="otp-sub-txt">We sent a 8-digit OTP to your email</div>
     <div class="auth-err" id="otp-err"></div>
     <div class="auth-field-label">Enter OTP</div>
-    <input class="auth-input" id="otp-input" placeholder="" type="number" inputmode="numeric" style="letter-spacing:6px;font-size:22px;text-align:center" onkeydown="if(event.key==='Enter')verifyOTP()">
+    <input class="auth-input" id="otp-input" placeholder="e.g. 123456" type="number" maxlength="6" inputmode="numeric" style="letter-spacing:6px;font-size:22px;text-align:center" onkeydown="if(event.key==='Enter')verifyOTP()">
     <button class="btn-primary" id="otp-cta" onclick="verifyOTP()">Verify &rarr;</button>
     <div class="auth-switch" onclick="cancelOTP()">← Back</div>
   </div>
@@ -1798,10 +1797,6 @@ input,textarea{-webkit-user-select:text!important;user-select:text!important;fon
   </div>
 
   <div class="vstack">
-    <a href="https://www.instagram.com/mathiq_pro?igsh=OGQ0dGcwMjN1aTBp" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);border-radius:16px;color:#fff;font-weight:900;font-size:15px;text-decoration:none;margin-top:4px">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
-      Follow on Instagram
-    </a>
     <button class="btn-secondary" onclick="goPage('ach-scr')" style="margin-top:4px">View All Badges →</button>
     <button class="btn-danger" onclick="doLogout()">&#8617; Sign Out</button>
   </div>
@@ -2818,168 +2813,115 @@ function setAvatarEl(el,username){
 // ════════════════════════════════════════════
 // AUTH (Supabase + OTP)
 // ════════════════════════════════════════════
-// AUTH
+// AUTH (Register Only + OTP)
 // ════════════════════════════════════════════
-var authMode = 'login';
-var _pendingUser = '';
-var _pendingEmail = '';
+var _pendingUser='';
+var _pendingEmail='';
 
-function toggleAuth() {
-  authMode = authMode === 'login' ? 'register' : 'login';
-  var isReg = authMode === 'register';
-  document.getElementById('auth-h').textContent = isReg ? 'Create Account' : 'Welcome back';
-  document.getElementById('auth-sub-txt').textContent = isReg ? 'Register to start your math journey 🚀' : 'Sign in to continue your streak';
-  document.getElementById('auth-cta').innerHTML = isReg ? 'Create Account &rarr;' : 'Sign In &rarr;';
-  document.getElementById('auth-switch').innerHTML = isReg ? 'Have an account? <b>Sign in</b>' : 'No account? <b>Create one</b>';
-  document.getElementById('auth-err').textContent = '';
-  document.getElementById('email-field-wrap').style.display = isReg ? 'block' : 'none';
-  document.getElementById('auth-email').value = '';
+function authNextField(){
+  document.getElementById('auth-email').focus();
 }
 
-function authNextField() {
-  if (authMode === 'register') {
-    document.getElementById('auth-email').focus();
-  } else {
-    document.getElementById('auth-pass').focus();
-  }
+function showOTPBox(email){
+  document.getElementById('auth-box').style.display='none';
+  document.getElementById('otp-box').style.display='block';
+  document.getElementById('otp-sub-txt').textContent='We sent a 8-digit OTP to '+email;
+  document.getElementById('otp-input').value='';
+  document.getElementById('otp-err').textContent='';
+  setTimeout(()=>document.getElementById('otp-input').focus(),200);
 }
 
-function showOTPBox(email) {
-  document.getElementById('auth-box').style.display = 'none';
-  document.getElementById('otp-box').style.display = 'block';
-  document.getElementById('otp-sub-txt').textContent = 'We sent a 8-digit OTP to ' + email;
-  document.getElementById('otp-input').value = '';
-  document.getElementById('otp-err').textContent = '';
-  setTimeout(() => document.getElementById('otp-input').focus(), 200);
+function cancelOTP(){
+  document.getElementById('otp-box').style.display='none';
+  document.getElementById('auth-box').style.display='block';
+  var ctaBtn=document.getElementById('auth-cta');
+  ctaBtn.disabled=false;
+  ctaBtn.innerHTML='Create Account &rarr;';
 }
 
-function cancelOTP() {
-  document.getElementById('otp-box').style.display = 'none';
-  document.getElementById('auth-box').style.display = 'block';
-  var ctaBtn = document.getElementById('auth-cta');
-  ctaBtn.disabled = false;
-  ctaBtn.innerHTML = authMode === 'register' ? 'Create Account &rarr;' : 'Sign In &rarr;';
-}
-
-async function verifyOTP() {
-  var otp = document.getElementById('otp-input').value.trim();
-  var errEl = document.getElementById('otp-err');
-  errEl.textContent = '';
-  if (!otp || otp.length < 6) { errEl.textContent = 'Please enter the OTP.'; return; }
-  var otpBtn = document.getElementById('otp-cta');
-  otpBtn.disabled = true;
-  otpBtn.innerHTML = '<span style="opacity:.6">Verifying...</span>';
-  try {
-    var sb = getSupabase();
-    var { data, error } = await sb.auth.verifyOtp({ email: _pendingEmail, token: otp, type: 'signup' });
-    if (error) { errEl.textContent = 'Invalid or expired OTP. Try again.'; otpBtn.disabled = false; otpBtn.innerHTML = 'Verify &rarr;'; return; }
-    if (data.user) {
+async function verifyOTP(){
+  var otp=document.getElementById('otp-input').value.trim();
+  var errEl=document.getElementById('otp-err');
+  errEl.textContent='';
+  if(!otp||otp.length<6){errEl.textContent='Please enter the 8-digit OTP.';return}
+  var otpBtn=document.getElementById('otp-cta');
+  otpBtn.disabled=true;
+  otpBtn.innerHTML='<span style="opacity:.6">Verifying...</span>';
+  try{
+    var sb=getSupabase();
+    var {data,error}=await sb.auth.verifyOtp({email:_pendingEmail, token:otp, type:'signup'});
+    if(error){errEl.textContent='Invalid or expired OTP. Try again.';otpBtn.disabled=false;otpBtn.innerHTML='Verify &rarr;';return}
+    if(data.user){
       await sb.from('profiles').upsert({
-        id: data.user.id,
-        username: _pendingUser,
-        email: _pendingEmail,
-        game_data: { username: _pendingUser },
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'id' });
+        id:data.user.id,
+        username:_pendingUser,
+        email:_pendingEmail,
+        game_data:{username:_pendingUser},
+        updated_at:new Date().toISOString()
+      },{onConflict:'id'});
     }
-    if (!DB[_pendingUser]) DB[_pendingUser] = { username: _pendingUser };
-    localStorage.setItem('mqpro_v3', JSON.stringify(DB));
-    CU = _pendingUser;
-    uSet('username', _pendingUser);
-    showToast('Account created! Welcome, ' + _pendingUser + ' 🎉');
+    if(!DB[_pendingUser])DB[_pendingUser]={username:_pendingUser};
+    localStorage.setItem('mqpro_v3',JSON.stringify(DB));
+    CU=_pendingUser;
+    uSet('username',_pendingUser);
+    showToast('Account created! Welcome, '+_pendingUser+' 🎉');
     goPage('home-scr');
-  } catch (e) {
-    errEl.textContent = 'Network error. Try again.';
-    otpBtn.disabled = false;
-    otpBtn.innerHTML = 'Verify &rarr;';
+  }catch(e){
+    errEl.textContent='Network error. Try again.';
+    otpBtn.disabled=false;
+    otpBtn.innerHTML='Verify &rarr;';
   }
 }
 
-async function doAuth() {
-  var user = document.getElementById('auth-user').value.trim().toLowerCase();
-  var pass = document.getElementById('auth-pass').value;
-  var errEl = document.getElementById('auth-err');
-  errEl.textContent = '';
+async function doAuth(){
+  var user=document.getElementById('auth-user').value.trim().toLowerCase();
+  var email=document.getElementById('auth-email').value.trim().toLowerCase();
+  var pass=document.getElementById('auth-pass').value;
+  var errEl=document.getElementById('auth-err');
+  errEl.textContent='';
+  if(!user){errEl.textContent='Please enter a username.';return}
+  if(user.length<2){errEl.textContent='Username must be at least 2 characters.';return}
+  if(!/^[a-z0-9_]+$/.test(user)){errEl.textContent='Only letters, numbers and _ allowed.';return}
+  if(!email||!email.includes('@')){errEl.textContent='Please enter a valid email.';return}
+  if(!pass||pass.length<3){errEl.textContent='Password must be at least 3 characters.';return}
 
-  // Validate
-  if (!user) { errEl.textContent = 'Please enter your username.'; return; }
-  if (user.length < 2) { errEl.textContent = 'Username must be at least 2 characters.'; return; }
-  if (!/^[a-z0-9_]+$/.test(user)) { errEl.textContent = 'Only letters, numbers and _ allowed.'; return; }
-  if (!pass || pass.length < 3) { errEl.textContent = 'Password must be at least 3 characters.'; return; }
-  if (authMode === 'register') {
-    var emailVal = document.getElementById('auth-email').value.trim().toLowerCase();
-    if (!emailVal || !emailVal.includes('@')) { errEl.textContent = 'Please enter a valid email.'; return; }
-  }
+  var ctaBtn=document.getElementById('auth-cta');
+  ctaBtn.disabled=true;
+  ctaBtn.innerHTML='<span style="opacity:.6">Loading...</span>';
 
-  var ctaBtn = document.getElementById('auth-cta');
-  ctaBtn.disabled = true;
-  ctaBtn.innerHTML = '<span style="opacity:.6">Loading...</span>';
+  var useSupabase=SUPABASE_URL.indexOf('YOUR_PROJECT_ID')===-1;
 
-  var useSupabase = SUPABASE_URL.indexOf('YOUR_PROJECT_ID') === -1;
-
-  if (useSupabase) {
-    try {
-      var sb = getSupabase();
-
-      if (authMode === 'register') {
-        // ── REGISTER ──
-        var email = document.getElementById('auth-email').value.trim().toLowerCase();
-        _pendingUser = user;
-        _pendingEmail = email;
-        var { data, error } = await sb.auth.signUp({ email, password: pass, options: { data: { username: user } } });
-        if (error) {
-          errEl.textContent = error.message.includes('already registered') ? 'Email already registered! Try signing in.' : error.message;
-          ctaBtn.disabled = false; ctaBtn.innerHTML = 'Create Account &rarr;'; return;
-        }
-        showToast('OTP sent to ' + email + ' 📬');
-        showOTPBox(email);
-
-      } else {
-        // ── LOGIN ──
-        // Fetch real email from profiles table using username
-        var { data: profile, error: profileErr } = await sb.from('profiles').select('email').eq('username', user).maybeSingle();
-        if (profileErr || !profile || !profile.email) {
-          errEl.textContent = 'Username not found. Please register first.';
-          ctaBtn.disabled = false; ctaBtn.innerHTML = 'Sign In &rarr;'; return;
-        }
-        var { data, error } = await sb.auth.signInWithPassword({ email: profile.email, password: pass });
-        if (error) {
-          errEl.textContent = 'Wrong username or password.';
-          ctaBtn.disabled = false; ctaBtn.innerHTML = 'Sign In &rarr;'; return;
-        }
-        CU = user;
-        if (!DB[CU]) DB[CU] = { username: user };
-        await loadUserDataFromSupabase(user);
-        showToast('Welcome back, ' + user + '! 🔥');
-        goPage('home-scr');
-        ctaBtn.disabled = false; ctaBtn.innerHTML = 'Sign In &rarr;';
+  if(useSupabase){
+    try{
+      var sb=getSupabase();
+      _pendingUser=user;
+      _pendingEmail=email;
+      var {data,error}=await sb.auth.signUp({email, password:pass, options:{data:{username:user}}});
+      if(error){
+        if(error.message.includes('already registered')) errEl.textContent='Email already registered!';
+        else errEl.textContent=error.message;
+        ctaBtn.disabled=false;ctaBtn.innerHTML='Create Account &rarr;';return;
       }
-    } catch (e) {
-      errEl.textContent = 'Network error. Try again.';
-      ctaBtn.disabled = false;
-      ctaBtn.innerHTML = authMode === 'register' ? 'Create Account &rarr;' : 'Sign In &rarr;';
+      showToast('OTP sent to '+email+' 📬');
+      showOTPBox(email);
+    }catch(e){
+      errEl.textContent='Network error. Try again.';
+      ctaBtn.disabled=false;
+      ctaBtn.innerHTML='Create Account &rarr;';
     }
   } else {
-    // ── Fallback: local auth ──
-    var authKey = '__auth__' + user;
-    if (authMode === 'register') {
-      if (DB[authKey]) { errEl.textContent = 'Username already taken!'; ctaBtn.disabled = false; ctaBtn.innerHTML = 'Create Account &rarr;'; return; }
-      DB[authKey] = { pw: pass };
-      DB[user] = { username: user };
-      save();
-      CU = user;
-      uSet('username', user);
-      showToast('Account created! Welcome, ' + user + ' 🎉');
-      goPage('home-scr');
-    } else {
-      if (!DB[authKey] || DB[authKey].pw !== pass) { errEl.textContent = 'Wrong username or password.'; ctaBtn.disabled = false; ctaBtn.innerHTML = 'Sign In &rarr;'; return; }
-      CU = user;
-      uSet('username', user);
-      showToast('Welcome back, ' + user + '! 🔥');
-      goPage('home-scr');
-    }
-    ctaBtn.disabled = false;
-    ctaBtn.innerHTML = authMode === 'register' ? 'Create Account &rarr;' : 'Sign In &rarr;';
+    // Fallback: local auth
+    var authKey='__auth__'+user;
+    if(DB[authKey]){errEl.textContent='Username already taken! Try another.';ctaBtn.disabled=false;ctaBtn.innerHTML='Create Account &rarr;';return}
+    DB[authKey]={pw:pass};
+    DB[user]={username:user};
+    save();
+    CU=user;
+    uSet('username',user);
+    showToast('Account created! Welcome, '+user+' 🎉');
+    goPage('home-scr');
+    ctaBtn.disabled=false;
+    ctaBtn.innerHTML='Create Account &rarr;';
   }
 }
 
