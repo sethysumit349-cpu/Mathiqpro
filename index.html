@@ -1011,18 +1011,19 @@ input,textarea{-webkit-user-select:text!important;user-select:text!important;fon
   </div>
 
   <div class="auth-box" id="auth-box">
-    <div class="auth-h" id="auth-h">Create Account</div>
-    <div class="auth-sub" id="auth-sub-txt">Register to start your math journey 🚀</div>
+    <div class="auth-h" id="auth-h">Welcome back</div>
+    <div class="auth-sub" id="auth-sub-txt">Sign in to continue your streak</div>
     <div class="auth-err" id="auth-err"></div>
     <div class="auth-field-label">Username</div>
     <input class="auth-input" id="auth-user" placeholder="Enter username" maxlength="18" autocomplete="username" spellcheck="false" onkeydown="if(event.key==='Enter')authNextField()">
-    <div id="email-field-wrap">
+    <div id="email-field-wrap" style="display:none">
       <div class="auth-field-label">Gmail / Email</div>
       <input class="auth-input" id="auth-email" placeholder="Enter your email" type="email" maxlength="80" autocomplete="email" onkeydown="if(event.key==='Enter')document.getElementById('auth-pass').focus()">
     </div>
     <div class="auth-field-label">Password</div>
     <input class="auth-input" id="auth-pass" placeholder="Enter password" type="password" maxlength="30" autocomplete="current-password" onkeydown="if(event.key==='Enter')doAuth()">
-    <button class="btn-primary" id="auth-cta" onclick="doAuth()">Create Account &rarr;</button>
+    <button class="btn-primary" id="auth-cta" onclick="doAuth()">Sign In &rarr;</button>
+    <div class="auth-switch" id="auth-switch" onclick="toggleAuth()">No account? <b>Create one</b></div>
   </div>
 
   <!-- OTP Verification Box -->
@@ -2873,89 +2874,167 @@ async function verifyOTP(){
   }
 }
 
+// AUTH
+// ════════════════════════════════════════════
+var authMode = 'login';
+var _pendingUser = '';
+var _pendingEmail = '';
+
+function toggleAuth(){
+  authMode = authMode === 'login' ? 'register' : 'login';
+  var isReg = authMode === 'register';
+  document.getElementById('auth-h').textContent = isReg ? 'Create Account' : 'Welcome back';
+  document.getElementById('auth-sub-txt').textContent = isReg ? 'Register to start your journey 🚀' : 'Sign in to continue your streak';
+  document.getElementById('auth-cta').innerHTML = isReg ? 'Create Account &rarr;' : 'Sign In &rarr;';
+  document.getElementById('auth-switch').innerHTML = isReg ? 'Have an account? <b>Sign in</b>' : 'No account? <b>Create one</b>';
+  document.getElementById('auth-err').textContent = '';
+  document.getElementById('email-field-wrap').style.display = isReg ? 'block' : 'none';
+  document.getElementById('auth-email').value = '';
+}
+
+function authNextField(){
+  if(authMode === 'register'){
+    document.getElementById('auth-email').focus();
+  } else {
+    document.getElementById('auth-pass').focus();
+  }
+}
+
+
 async function doAuth(){
-  var user=document.getElementById('auth-user').value.trim().toLowerCase();
-  var email=document.getElementById('auth-email').value.trim().toLowerCase();
-  var pass=document.getElementById('auth-pass').value;
-  var errEl=document.getElementById('auth-err');
-  errEl.textContent='';
-  if(!user){errEl.textContent='Please enter a username.';return}
-  if(user.length<2){errEl.textContent='Username must be at least 2 characters.';return}
-  if(!/^[a-z0-9_]+$/.test(user)){errEl.textContent='Only letters, numbers and _ allowed.';return}
-  if(!email||!email.includes('@')){errEl.textContent='Please enter a valid email.';return}
-  if(!pass||pass.length<3){errEl.textContent='Password must be at least 3 characters.';return}
+  var user = document.getElementById('auth-user').value.trim().toLowerCase();
+  var pass = document.getElementById('auth-pass').value;
+  var errEl = document.getElementById('auth-err');
+  errEl.textContent = '';
 
-  var ctaBtn=document.getElementById('auth-cta');
-  ctaBtn.disabled=true;
-  ctaBtn.innerHTML='<span style="opacity:.6">Loading...</span>';
+  if(!user){ errEl.textContent = 'Please enter your username.'; return; }
+  if(user.length < 2){ errEl.textContent = 'Username must be at least 2 characters.'; return; }
+  if(!/^[a-z0-9_]+$/.test(user)){ errEl.textContent = 'Only letters, numbers and _ allowed.'; return; }
+  if(!pass || pass.length < 3){ errEl.textContent = 'Password must be at least 3 characters.'; return; }
+  if(authMode === 'register'){
+    var emailVal = document.getElementById('auth-email').value.trim().toLowerCase();
+    if(!emailVal || !emailVal.includes('@')){ errEl.textContent = 'Please enter a valid email.'; return; }
+  }
 
-  var useSupabase=SUPABASE_URL.indexOf('YOUR_PROJECT_ID')===-1;
+  var ctaBtn = document.getElementById('auth-cta');
+  ctaBtn.disabled = true;
+  ctaBtn.innerHTML = '<span style="opacity:.6">Loading...</span>';
+
+  var useSupabase = SUPABASE_URL.indexOf('YOUR_PROJECT_ID') === -1;
 
   if(useSupabase){
     try{
-      var sb=getSupabase();
-      _pendingUser=user;
-      _pendingEmail=email;
-      var {data,error}=await sb.auth.signUp({email, password:pass, options:{data:{username:user}}});
-      if(error){
-        if(error.message.includes('already registered')) errEl.textContent='Email already registered!';
-        else errEl.textContent=error.message;
-        ctaBtn.disabled=false;ctaBtn.innerHTML='Create Account &rarr;';return;
+      var sb = getSupabase();
+
+      if(authMode === 'register'){
+        var email = document.getElementById('auth-email').value.trim().toLowerCase();
+        _pendingUser = user;
+        _pendingEmail = email;
+        var {data, error} = await sb.auth.signUp({email, password: pass, options:{data:{username: user}}});
+        if(error){
+          errEl.textContent = error.message.includes('already registered') ? 'Email already registered! Try signing in.' : error.message;
+          ctaBtn.disabled = false; ctaBtn.innerHTML = 'Create Account &rarr;'; return;
+        }
+        showToast('OTP sent to ' + email + ' 📬');
+        showOTPBox(email);
+
+      } else {
+        // LOGIN — fetch email from profiles using username
+        var {data: profile, error: pErr} = await sb.from('profiles').select('email').eq('username', user).maybeSingle();
+        if(pErr || !profile || !profile.email){
+          errEl.textContent = 'Username not found. Please register first.';
+          ctaBtn.disabled = false; ctaBtn.innerHTML = 'Sign In &rarr;'; return;
+        }
+        var {data, error} = await sb.auth.signInWithPassword({email: profile.email, password: pass});
+        if(error){
+          errEl.textContent = 'Wrong username or password.';
+          ctaBtn.disabled = false; ctaBtn.innerHTML = 'Sign In &rarr;'; return;
+        }
+        CU = user;
+        if(!DB[CU]) DB[CU] = {username: user};
+        localStorage.setItem('mqpro_loggedin', CU);
+        await loadUserDataFromSupabase(user);
+        showToast('Welcome back, ' + user + '! 🔥');
+        goPage('home-scr');
+        ctaBtn.disabled = false; ctaBtn.innerHTML = 'Sign In &rarr;';
       }
-      showToast('OTP sent to '+email+' 📬');
-      showOTPBox(email);
+
     }catch(e){
-      errEl.textContent='Network error. Try again.';
-      ctaBtn.disabled=false;
-      ctaBtn.innerHTML='Create Account &rarr;';
+      errEl.textContent = 'Network error. Try again.';
+      ctaBtn.disabled = false;
+      ctaBtn.innerHTML = authMode === 'register' ? 'Create Account &rarr;' : 'Sign In &rarr;';
     }
+
   } else {
-    // Fallback: local auth
-    var authKey='__auth__'+user;
-    if(DB[authKey]){errEl.textContent='Username already taken! Try another.';ctaBtn.disabled=false;ctaBtn.innerHTML='Create Account &rarr;';return}
-    DB[authKey]={pw:pass};
-    DB[user]={username:user};
-    save();
-    CU=user;
-    uSet('username',user);
-    showToast('Account created! Welcome, '+user+' 🎉');
-    goPage('home-scr');
-    ctaBtn.disabled=false;
-    ctaBtn.innerHTML='Create Account &rarr;';
+    var authKey = '__auth__' + user;
+    if(authMode === 'register'){
+      if(DB[authKey]){ errEl.textContent = 'Username already taken!'; ctaBtn.disabled = false; ctaBtn.innerHTML = 'Create Account &rarr;'; return; }
+      DB[authKey] = {pw: pass};
+      DB[user] = {username: user};
+      save();
+      CU = user;
+      uSet('username', user);
+      localStorage.setItem('mqpro_loggedin', CU);
+      showToast('Account created! Welcome, ' + user + ' 🎉');
+      goPage('home-scr');
+    } else {
+      if(!DB[authKey] || DB[authKey].pw !== pass){ errEl.textContent = 'Wrong username or password.'; ctaBtn.disabled = false; ctaBtn.innerHTML = 'Sign In &rarr;'; return; }
+      CU = user;
+      uSet('username', user);
+      localStorage.setItem('mqpro_loggedin', CU);
+      showToast('Welcome back, ' + user + '! 🔥');
+      goPage('home-scr');
+    }
+    ctaBtn.disabled = false;
+    ctaBtn.innerHTML = authMode === 'register' ? 'Create Account &rarr;' : 'Sign In &rarr;';
   }
 }
 
+
 async function doLogout(){
-  var useSupabase = SUPABASE_URL.indexOf('YOUR_PROJECT_ID')===-1;
+  var useSupabase = SUPABASE_URL.indexOf('YOUR_PROJECT_ID') === -1;
   if(useSupabase){
     try{ await getSupabase().auth.signOut(); }catch(e){}
   }
-  CU=null;
-  document.getElementById('auth-user').value='';
-  document.getElementById('auth-pass').value='';
-  document.getElementById('auth-err').textContent='';
+  CU = null;
+  localStorage.removeItem('mqpro_loggedin');
+  document.getElementById('auth-user').value = '';
+  document.getElementById('auth-pass').value = '';
+  document.getElementById('auth-err').textContent = '';
   goPage('splash-scr');
 }
 
-// Restore session on page load if Supabase is configured
-(async function restoreSession(){
-  var useSupabase = SUPABASE_URL.indexOf('YOUR_PROJECT_ID')===-1;
-  if(!useSupabase) return;
-  try{
-    var sb = getSupabase();
-    var {data:{session}} = await sb.auth.getSession();
-    if(session && session.user){
-      // Get username from profiles table
-      var {data} = await sb.from('profiles').select('username,game_data').eq('id',session.user.id).single();
-      if(data && data.username){
-        CU = data.username;
-        if(data.game_data) DB[CU] = data.game_data;
-        localStorage.setItem('mqpro_v3',JSON.stringify(DB));
-        // Navigate to home after a brief delay so the app initialises
-        setTimeout(function(){ if(CU) goPage('home-scr'); }, 400);
+// Auto-login: App open হলে session check
+(async function autoLogin(){
+  var savedUser = localStorage.getItem('mqpro_loggedin');
+  var useSupabase = SUPABASE_URL.indexOf('YOUR_PROJECT_ID') === -1;
+
+  if(useSupabase){
+    try{
+      var sb = getSupabase();
+      var {data:{session}} = await sb.auth.getSession();
+      if(session && session.user){
+        var {data} = await sb.from('profiles').select('username,game_data').eq('id', session.user.id).single();
+        if(data && data.username){
+          CU = data.username;
+          if(data.game_data) DB[CU] = data.game_data;
+          localStorage.setItem('mqpro_v3', JSON.stringify(DB));
+          localStorage.setItem('mqpro_loggedin', CU);
+          setTimeout(function(){ goPage('home-scr'); }, 400);
+          return;
+        }
       }
-    }
-  }catch(e){ console.warn('Session restore error:', e.message); }
+    }catch(e){ console.warn('Session check error:', e.message); }
+  }
+
+  // Fallback: LocalStorage ରେ saved user ଥିଲେ
+  if(savedUser){
+    CU = savedUser;
+    if(DB[CU]) uSet('username', CU);
+    setTimeout(function(){ goPage('home-scr'); }, 400);
+    return;
+  }
+  // ଦୁଇଟା ନ ଥିଲେ Registration screen ରହୁ
 })();
 
 // ════════════════════════════════════════════
