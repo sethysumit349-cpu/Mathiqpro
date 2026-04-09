@@ -1029,7 +1029,7 @@ input,textarea{-webkit-user-select:text!important;user-select:text!important;fon
   <!-- OTP Verification Box -->
   <div class="auth-box" id="otp-box" style="display:none">
     <div class="auth-h">Check your email 📬</div>
-    <div class="auth-sub" id="otp-sub-txt">We sent a 6-digit OTP to your email</div>
+    <div class="auth-sub" id="otp-sub-txt">We sent a 8-digit OTP to your email</div>
     <div class="auth-err" id="otp-err"></div>
     <div class="auth-field-label">Enter OTP</div>
     <input class="auth-input" id="otp-input" placeholder="e.g. 123456" type="number" maxlength="6" inputmode="numeric" style="letter-spacing:6px;font-size:22px;text-align:center" onkeydown="if(event.key==='Enter')verifyOTP()">
@@ -1798,6 +1798,10 @@ input,textarea{-webkit-user-select:text!important;user-select:text!important;fon
   </div>
 
   <div class="vstack">
+    <a href="https://www.instagram.com/mathiq_pro?igsh=OGQ0dGcwMjN1aTBp" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);border-radius:16px;color:#fff;font-weight:900;font-size:15px;text-decoration:none;margin-top:4px">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+      Follow on Instagram
+    </a>
     <button class="btn-secondary" onclick="goPage('ach-scr')" style="margin-top:4px">View All Badges →</button>
     <button class="btn-danger" onclick="doLogout()">&#8617; Sign Out</button>
   </div>
@@ -2842,7 +2846,7 @@ function authNextField(){
 function showOTPBox(email){
   document.getElementById('auth-box').style.display='none';
   document.getElementById('otp-box').style.display='block';
-  document.getElementById('otp-sub-txt').textContent='We sent a 6-digit OTP to '+email;
+  document.getElementById('otp-sub-txt').textContent='We sent a 8-digit OTP to '+email;
   document.getElementById('otp-input').value='';
   document.getElementById('otp-err').textContent='';
   setTimeout(()=>document.getElementById('otp-input').focus(),200);
@@ -2860,7 +2864,7 @@ async function verifyOTP(){
   var otp=document.getElementById('otp-input').value.trim();
   var errEl=document.getElementById('otp-err');
   errEl.textContent='';
-  if(!otp||otp.length<6){errEl.textContent='Please enter the 6-digit OTP.';return}
+  if(!otp||otp.length<6){errEl.textContent='Please enter the 8-digit OTP.';return}
   var otpBtn=document.getElementById('otp-cta');
   otpBtn.disabled=true;
   otpBtn.innerHTML='<span style="opacity:.6">Verifying...</span>';
