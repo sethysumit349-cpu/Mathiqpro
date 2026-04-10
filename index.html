@@ -2902,11 +2902,13 @@ function authNextField(){
 
 
 async function doAuth(){
-  var user = document.getElementById('auth-user').value.trim().toLowerCase();
-  var pass = document.getElementById('auth-pass').value;
-  var errEl = document.getElementById('auth-err');
+  var user   = document.getElementById('auth-user').value.trim().toLowerCase();
+  var pass   = document.getElementById('auth-pass').value;
+  var errEl  = document.getElementById('auth-err');
+  var ctaBtn = document.getElementById('auth-cta');
   errEl.textContent = '';
 
+  // --- Validation ---
   if(!user){ errEl.textContent = 'Please enter your username.'; return; }
   if(user.length < 2){ errEl.textContent = 'Username must be at least 2 characters.'; return; }
   if(!/^[a-z0-9_]+$/.test(user)){ errEl.textContent = 'Only letters, numbers and _ allowed.'; return; }
@@ -2916,7 +2918,6 @@ async function doAuth(){
     if(!emailVal || !emailVal.includes('@')){ errEl.textContent = 'Please enter a valid email.'; return; }
   }
 
-  var ctaBtn = document.getElementById('auth-cta');
   ctaBtn.disabled = true;
   ctaBtn.innerHTML = '<span style="opacity:.6">Loading...</span>';
 
@@ -2927,8 +2928,26 @@ async function doAuth(){
       var sb = getSupabase();
 
       if(authMode === 'register'){
+        // ✅ CHECK: Is username already taken? (frontend check before signup)
+        var {data: existingUser, error: checkErr} = await sb
+          .from('profiles')
+          .select('username')
+          .eq('username', user)
+          .maybeSingle();
+
+        if(checkErr){
+          errEl.textContent = 'Could not verify username. Please try again.';
+          ctaBtn.disabled = false; ctaBtn.innerHTML = 'Create Account &rarr;'; return;
+        }
+        if(existingUser){
+          // Username already exists — block registration
+          errEl.textContent = '❌ Username "' + user + '" is already taken. Please choose another.';
+          ctaBtn.disabled = false; ctaBtn.innerHTML = 'Create Account &rarr;'; return;
+        }
+
+        // Username is free — proceed with Supabase Auth signup
         var email = document.getElementById('auth-email').value.trim().toLowerCase();
-        _pendingUser = user;
+        _pendingUser  = user;
         _pendingEmail = email;
         var {data, error} = await sb.auth.signUp({email, password: pass, options:{data:{username: user}}});
         if(error){
@@ -2966,9 +2985,10 @@ async function doAuth(){
     }
 
   } else {
+    // Offline / localStorage fallback
     var authKey = '__auth__' + user;
     if(authMode === 'register'){
-      if(DB[authKey]){ errEl.textContent = 'Username already taken!'; ctaBtn.disabled = false; ctaBtn.innerHTML = 'Create Account &rarr;'; return; }
+      if(DB[authKey]){ errEl.textContent = '❌ Username already taken! Choose another.'; ctaBtn.disabled = false; ctaBtn.innerHTML = 'Create Account &rarr;'; return; }
       DB[authKey] = {pw: pass};
       DB[user] = {username: user};
       save();
