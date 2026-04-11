@@ -1659,6 +1659,11 @@ input,textarea{-webkit-user-select:text!important;user-select:text!important;fon
     <div class="nav-btn" onclick="goPage('stats-scr')"><span class="nb-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>Stats</div>
     <div class="nav-btn" onclick="goPage('ach-scr')"><span class="nb-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg></span>Badges</div>
     <div class="nav-btn" onclick="goPage('calc-scr')"><span class="nb-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="8" y2="10" stroke-width="3" stroke-linecap="round"/><line x1="12" y1="10" x2="12" y2="10" stroke-width="3" stroke-linecap="round"/><line x1="16" y1="10" x2="16" y2="10" stroke-width="3" stroke-linecap="round"/><line x1="8" y1="14" x2="8" y2="14" stroke-width="3" stroke-linecap="round"/><line x1="12" y1="14" x2="12" y2="14" stroke-width="3" stroke-linecap="round"/><line x1="16" y1="14" x2="16" y2="14" stroke-width="3" stroke-linecap="round"/><line x1="8" y1="18" x2="16" y2="18" stroke-width="3" stroke-linecap="round"/></svg></span>Calc</div>
+    <div class="nav-btn" onclick="goPage('search-scr');initSearch()" style="position:relative">
+      <span class="nb-icon" style="position:relative;display:inline-block">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span class="inv-dot" id="inv-dot"></span>
+      </span>Find</div>
     <div class="nav-btn" onclick="goPage('notif-scr');renderNotif()"><span class="nb-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>Alerts</div>
   </div>
 
@@ -1767,6 +1772,53 @@ input,textarea{-webkit-user-select:text!important;user-select:text!important;fon
   <button class="btn-danger" onclick="clearLB()">Clear All Scores</button>
 </div>
 </div>
+
+
+<!-- PLAYER SEARCH -->
+<div id="search-scr" class="scr">
+<div class="pad">
+  <button class="back-btn" onclick="goPage('home-scr')">&#8592; Back</button>
+  <div class="screen-title">&#128269; Find Player</div>
+  <div class="screen-sub">Search any player by username</div>
+  <div class="search-wrap">
+    <input class="auth-input" id="srch-inp" placeholder="Enter username..." maxlength="18" spellcheck="false" onkeydown="if(event.key==='Enter')doSearch()">
+    <button class="btn-primary" onclick="doSearch()" style="padding:0 18px;border-radius:14px">Search</button>
+  </div>
+  <div id="srch-res"></div>
+</div>
+</div>
+
+<!-- VIEW PLAYER PROFILE -->
+<div id="view-prof-scr" class="scr">
+<div class="pad">
+  <button class="back-btn" onclick="goPage('search-scr')">&#8592; Back</button>
+  <div class="prof-header">
+    <div class="prof-avatar-lg" id="vp-av" style="font-size:28px;font-weight:900;display:flex;align-items:center;justify-content:center"></div>
+    <div class="prof-name" id="vp-name">&#8211;</div>
+    <div class="prof-level" id="vp-lvl">Loading...</div>
+  </div>
+  <div class="prof-stats" id="vp-stats"></div>
+  <div style="margin-top:16px">
+    <div class="prof-badges-label">Achievements</div>
+    <div id="vp-badges" class="vp-badge-grid"></div>
+  </div>
+  <button class="invite-btn" id="vp-inv-btn" onclick="sendInvite()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    Invite to Play
+  </button>
+</div>
+</div>
+
+<!-- GAME INVITES -->
+<div id="invites-scr" class="scr">
+<div class="pad">
+  <button class="back-btn" onclick="goPage('home-scr')">&#8592; Back</button>
+  <div class="screen-title">&#127918; Invites</div>
+  <div class="screen-sub">Challenges from other players</div>
+  <div id="inv-list"></div>
+</div>
+</div>
+
 
 <!-- ═══════════ STATS ═══════════ -->
 <div id="stats-scr" class="scr">
@@ -3011,6 +3063,249 @@ async function doAuth(){
 }
 
 
+
+// ════════════════════════════════════════════
+// PLAYER SEARCH + PROFILE + INVITES
+// ════════════════════════════════════════════
+var _curViewUser = '';
+
+function initSearch(){
+  var inp = document.getElementById('srch-inp');
+  var res = document.getElementById('srch-res');
+  if(inp) inp.value = '';
+  if(res) res.innerHTML = '';
+}
+
+async function doSearch(){
+  var q = (document.getElementById('srch-inp').value || '').trim().toLowerCase();
+  var res = document.getElementById('srch-res');
+  if(!q || q.length < 2){
+    res.innerHTML = '<div class="search-empty"><div class="search-empty-icon">⚠️</div>Enter at least 2 characters</div>';
+    return;
+  }
+  res.innerHTML = '<div class="search-empty">Searching...</div>';
+
+  var players = [];
+  var useSupabase = SUPABASE_URL.indexOf('YOUR_PROJECT_ID') === -1;
+
+  if(useSupabase){
+    try{
+      var sb = getSupabase();
+      var {data, error} = await sb.from('profiles')
+        .select('username,game_data')
+        .ilike('username', '%' + q + '%')
+        .limit(10);
+      if(!error && data) players = data;
+    }catch(e){ console.warn('Search err', e); }
+  } else {
+    Object.keys(DB).filter(function(k){ return !k.startsWith('__') && k.toLowerCase().includes(q); })
+      .forEach(function(u){ players.push({username:u, game_data: DB[u]||{}}); });
+  }
+
+  if(!players.length){
+    res.innerHTML = '<div class="search-empty"><div class="search-empty-icon">🔍</div>No player found for "<b>' + q + '</b>"</div>';
+    return;
+  }
+
+  var html = '';
+  players.forEach(function(p){
+    var gd = p.game_data || {};
+    var lv = getLv(gd.xp || 0);
+    var isMe = p.username === CU;
+    html += '<div class="player-card" data-uname="' + p.username + '">';
+    html += '<div class="pl-av">' + (p.username||'?')[0].toUpperCase() + '</div>';
+    html += '<div class="pl-info">';
+    html += '<div class="pl-name">' + p.username + (isMe ? ' <span style="font-size:11px;color:var(--gold)">(You)</span>' : '') + '</div>';
+    html += '<div class="pl-meta">Lv.' + lv.n + ' ' + lv.name + ' &nbsp;·&nbsp; Best: ' + (gd.best||0) + ' pts &nbsp;·&nbsp; ' + (gd.games||0) + ' games</div>';
+    html += '</div>';
+    html += '<svg class="pl-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>';
+    html += '</div>';
+  });
+  res.innerHTML = html;
+
+  res.onclick = function(e){
+    var card = e.target.closest('.player-card');
+    if(card) openPlayer(card.dataset.uname);
+  };
+}
+
+async function openPlayer(username){
+  _curViewUser = username;
+  goPage('view-prof-scr');
+
+  // Reset UI
+  document.getElementById('vp-av').textContent = (username||'?')[0].toUpperCase();
+  document.getElementById('vp-name').textContent = username;
+  document.getElementById('vp-lvl').textContent = 'Loading...';
+  document.getElementById('vp-stats').innerHTML = '';
+  document.getElementById('vp-badges').innerHTML = '<div style="color:var(--muted2);font-size:13px;padding:10px 0">Loading...</div>';
+  var invBtn = document.getElementById('vp-inv-btn');
+  if(invBtn) invBtn.style.display = username === CU ? 'none' : 'flex';
+
+  var gd = {};
+  var useSupabase = SUPABASE_URL.indexOf('YOUR_PROJECT_ID') === -1;
+
+  if(useSupabase){
+    try{
+      var sb = getSupabase();
+      var {data} = await sb.from('profiles').select('game_data').eq('username', username).maybeSingle();
+      if(data && data.game_data) gd = data.game_data;
+    }catch(e){}
+  } else {
+    gd = DB[username] || {};
+  }
+
+  // Level
+  var lv = getLv(gd.xp || 0);
+  document.getElementById('vp-lvl').textContent = 'Level ' + lv.n + ' · ' + lv.name;
+
+  // Stats
+  var totAns = gd.totAns || 0, totCor = gd.totCor || 0;
+  var acc = totAns > 0 ? Math.round(totCor / totAns * 100) : 0;
+  document.getElementById('vp-stats').innerHTML =
+    '<div class="prof-stat"><div class="ps-val">' + (gd.xp||0) + '</div><div class="ps-key">XP</div></div>' +
+    '<div class="prof-stat"><div class="ps-val">' + (gd.best||0) + '</div><div class="ps-key">Best</div></div>' +
+    '<div class="prof-stat"><div class="ps-val">' + (gd.games||0) + '</div><div class="ps-key">Games</div></div>' +
+    '<div class="prof-stat"><div class="ps-val">' + (gd.streak||0) + '</div><div class="ps-key">Streak</div></div>' +
+    '<div class="prof-stat"><div class="ps-val">' + acc + '%</div><div class="ps-key">Acc</div></div>';
+
+  // Badges — swap CU/DB temporarily to evaluate badges for this user
+  var sCU = CU, sDB = JSON.parse(JSON.stringify(DB));
+  CU = username;
+  if(!DB[CU]) DB[CU] = {};
+  Object.assign(DB[CU], gd);
+  var earned = ACHS.filter(function(a){ try{ return a.chk(); }catch(e){ return false; } });
+  CU = sCU; DB = sDB;
+
+  if(!ACHS.length){
+    document.getElementById('vp-badges').innerHTML = '<div style="color:var(--muted2);font-size:13px">No badges</div>';
+    return;
+  }
+  var bhtml = '';
+  ACHS.forEach(function(a){
+    var won = earned.find(function(e){ return e.id === a.id; });
+    bhtml += '<div class="vp-badge-card ' + (won ? 'won' : 'locked') + '" title="' + a.name + '">';
+    bhtml += '<div class="vp-badge-icon">' + a.icon + '</div>';
+    bhtml += '<div class="vp-badge-name">' + a.name + '</div>';
+    bhtml += '</div>';
+  });
+  document.getElementById('vp-badges').innerHTML = bhtml;
+}
+
+// ── SEND INVITE ──
+async function sendInvite(){
+  if(!CU){ showToast('Sign in first'); return; }
+  if(_curViewUser === CU){ showToast('Cannot invite yourself!'); return; }
+
+  var btn = document.getElementById('vp-inv-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span style="opacity:.6">Sending...</span>';
+
+  var useSupabase = SUPABASE_URL.indexOf('YOUR_PROJECT_ID') === -1;
+
+  if(useSupabase){
+    try{
+      var sb = getSupabase();
+      var {data: sp} = await sb.from('profiles').select('id').eq('username', CU).maybeSingle();
+      var {data: rp} = await sb.from('profiles').select('id').eq('username', _curViewUser).maybeSingle();
+      if(!sp || !rp){ showToast('Player not found'); }
+      else {
+        var {data: ex} = await sb.from('game_invites')
+          .select('id').eq('sender_id', sp.id).eq('receiver_id', rp.id).eq('status','pending').maybeSingle();
+        if(ex){ showToast('Invite already pending!'); }
+        else {
+          var {error} = await sb.from('game_invites').insert({
+            sender_id: sp.id, sender_username: CU,
+            receiver_id: rp.id, receiver_username: _curViewUser,
+            status: 'pending', created_at: new Date().toISOString()
+          });
+          if(error) showToast('Error: ' + error.message);
+          else showToast('Invite sent to ' + _curViewUser + '! 🎮');
+        }
+      }
+    }catch(e){ showToast('Network error'); }
+  } else {
+    showToast('Invite sent to ' + _curViewUser + '! 🎮 (simulation)');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Invite to Play';
+}
+
+// ── LOAD INVITES ──
+async function loadInvites(){
+  if(!CU) return;
+  var listEl = document.getElementById('inv-list');
+  if(!listEl) return;
+  listEl.innerHTML = '<div style="color:var(--muted2);text-align:center;padding:20px">Loading...</div>';
+
+  var useSupabase = SUPABASE_URL.indexOf('YOUR_PROJECT_ID') === -1;
+  if(!useSupabase){
+    listEl.innerHTML = '<div class="search-empty"><div class="search-empty-icon">🎮</div>Connect Supabase to see invites</div>';
+    return;
+  }
+
+  try{
+    var sb = getSupabase();
+    var {data: me} = await sb.from('profiles').select('id').eq('username', CU).maybeSingle();
+    if(!me){ listEl.innerHTML = '<div class="search-empty">Profile not found</div>'; return; }
+
+    var {data: invs} = await sb.from('game_invites')
+      .select('*').eq('receiver_id', me.id).eq('status','pending')
+      .order('created_at', {ascending:false});
+
+    var dot = document.getElementById('inv-dot');
+    if(dot) dot.style.display = (invs && invs.length) ? 'block' : 'none';
+
+    if(!invs || !invs.length){
+      listEl.innerHTML = '<div class="search-empty"><div class="search-empty-icon">🎮</div>No pending invites</div>';
+      return;
+    }
+
+    var html = '';
+    invs.forEach(function(inv){
+      var from = inv.sender_username || 'Unknown';
+      html += '<div class="inv-item">';
+      html += '<div class="pl-av" style="width:38px;height:38px;font-size:16px">' + from[0].toUpperCase() + '</div>';
+      html += '<div><div class="inv-from">' + from + '</div><div class="inv-sub">Wants to play with you!</div></div>';
+      html += '<div class="inv-actions">';
+      html += '<button class="inv-acc" data-id="' + inv.id + '" data-from="' + from + '">Accept</button>';
+      html += '<button class="inv-rej" data-id="' + inv.id + '">Decline</button>';
+      html += '</div></div>';
+    });
+    listEl.innerHTML = html;
+
+    listEl.onclick = async function(e){
+      var acc = e.target.closest('.inv-acc');
+      var rej = e.target.closest('.inv-rej');
+      if(acc) await replyInvite(acc.dataset.id, 'accepted', acc.dataset.from);
+      if(rej) await replyInvite(rej.dataset.id, 'rejected', '');
+    };
+  }catch(e){
+    listEl.innerHTML = '<div class="search-empty">Error loading invites</div>';
+  }
+}
+
+async function replyInvite(id, status, from){
+  var useSupabase = SUPABASE_URL.indexOf('YOUR_PROJECT_ID') === -1;
+  if(!useSupabase) return;
+  try{
+    var sb = getSupabase();
+    await sb.from('game_invites').update({status:status}).eq('id', id);
+    if(status === 'accepted'){
+      showToast('Challenge accepted! Get ready vs ' + from + '! 🔥');
+      setTimeout(function(){ showToast('Multiplayer mode coming soon! 🚀'); }, 2000);
+    } else {
+      showToast('Invite declined.');
+    }
+    loadInvites();
+  }catch(e){ showToast('Error'); }
+}
+
+// Auto-check invites every 30s when logged in
+setInterval(function(){ if(CU) loadInvites(); }, 30000);
+
+
 async function doLogout(){
   var useSupabase = SUPABASE_URL.indexOf('YOUR_PROJECT_ID') === -1;
   if(useSupabase){
@@ -3995,6 +4290,35 @@ if(document.readyState!=='loading'){ injectSymbolArt(); startReminderEngine(); r
 .toggle-track.on .toggle-thumb{transform:translateX(22px)}
 @keyframes calcAns{0%{transform:scale(1.08)}100%{transform:scale(1)}}
 #calc-main.pop{animation:calcAns .18s ease}
+
+/* ── PLAYER SEARCH & INVITE ── */
+.search-wrap{display:flex;gap:8px;margin:14px 0}
+.search-wrap .auth-input{flex:1;margin:0}
+.player-card{display:flex;align-items:center;gap:12px;padding:14px;background:var(--s2);border:1.5px solid var(--bdr2);border-radius:14px;margin-bottom:10px;cursor:pointer;transition:border-color .2s,box-shadow .2s}
+.player-card:active{border-color:var(--gold);box-shadow:0 0 16px rgba(249,201,50,.12)}
+.pl-av{width:46px;height:46px;border-radius:50%;background:var(--s3);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;color:var(--gold);flex-shrink:0}
+.pl-info{flex:1;min-width:0}
+.pl-name{font-weight:900;font-size:15px;color:var(--fg);margin-bottom:2px}
+.pl-meta{font-size:12px;color:var(--muted2)}
+.pl-arrow{opacity:.35;flex-shrink:0}
+.search-empty{text-align:center;padding:40px 0;color:var(--muted2)}
+.search-empty-icon{font-size:36px;margin-bottom:10px}
+.vp-badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:10px;margin-top:10px}
+.vp-badge-card{background:var(--s2);border:1.5px solid var(--bdr2);border-radius:12px;padding:12px 8px;text-align:center;transition:border-color .2s}
+.vp-badge-card.won{border-color:rgba(249,201,50,.5);background:rgba(249,201,50,.05)}
+.vp-badge-card.locked{opacity:.35;filter:grayscale(.8)}
+.vp-badge-icon{font-size:22px;margin-bottom:5px;line-height:1.2}
+.vp-badge-name{font-size:10px;font-weight:800;color:var(--fg);letter-spacing:.3px;line-height:1.3}
+.invite-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;background:linear-gradient(135deg,#7c3aed,#4f46e5);border:none;border-radius:16px;color:#fff;font-weight:900;font-size:15px;cursor:pointer;margin-top:14px;transition:opacity .2s}
+.invite-btn:disabled{opacity:.5;cursor:not-allowed}
+.invite-btn:active{opacity:.8}
+.inv-item{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--s2);border:1.5px solid var(--bdr2);border-radius:12px;margin-bottom:8px}
+.inv-from{font-weight:900;color:var(--gold);font-size:14px}
+.inv-sub{font-size:11px;color:var(--muted2);margin-top:2px}
+.inv-actions{display:flex;gap:6px;margin-left:auto;flex-shrink:0}
+.inv-acc{background:rgba(0,245,160,.12);color:#00f5a0;border:1px solid rgba(0,245,160,.3);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:800;cursor:pointer}
+.inv-rej{background:rgba(244,63,94,.1);color:var(--red,#f43f5e);border:1px solid rgba(244,63,94,.25);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:800;cursor:pointer}
+.inv-dot{position:absolute;top:-3px;right:-3px;width:10px;height:10px;background:#e11d48;border-radius:50%;display:none}
 </style>
 
 <script>
