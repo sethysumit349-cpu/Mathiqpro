@@ -3102,6 +3102,7 @@ async function verifyOTP(){
     uSet('username',_pendingUser);
     showToast('Account created! Welcome, '+_pendingUser+' 🎉');
     goPage('home-scr');
+    subscribeInviteChannel();
   }catch(e){
     errEl.textContent='Network error. Try again.';
     otpBtn.disabled=false;
@@ -3559,256 +3560,373 @@ async function openPlayer(username){
 }
 
 // ════════════════════════════════════════════
-// MULTIPLAYER GAME (Simulated)
+// ════════════════════════════════════════════
+// REAL MULTIPLAYER GAME (Supabase Realtime)
 // ════════════════════════════════════════════
 var _multiOpponent = '';
-var _multiMyScore = 0;
+var _multiMyScore  = 0;
 var _multiOppScore = 0;
-var _multiQs = [];
-var _multiQIdx = 0;
-var _multiTimer = 15;
-var _multiTimerID = null;
-var _multiTotal = 10;
+var _multiQs       = [];
+var _multiQIdx     = 0;
+var _multiTimer    = 15;
+var _multiTimerID  = null;
+var _multiTotal    = 10;
+var _multiChannel  = null;   // Supabase Realtime channel
+var _multiRoomId   = null;
+var _multiIsHost   = false;
+var _multiAnswered = false;   // Did I answer current Q?
+var _inviteChannel = null;   // Listen for incoming game-start signals
+var _multiSeed     = 0;
 
-function startMultiGame(opponent){
-  _multiOpponent = opponent || _curViewUser || 'Bot';
-  _multiMyScore = 0;
-  _multiOppScore = 0;
-  _multiQIdx = 0;
-  _multiQs = genMultiQuestions(_multiTotal);
+// ── Seeded RNG (both players get identical questions) ──
+function _srng(seed){ var x=Math.sin(seed)*10000; return x-Math.floor(x); }
 
-  document.getElementById('multi-vs-label').textContent = 'vs ' + _multiOpponent;
-  document.getElementById('multi-my-name').textContent = CU || 'You';
-  document.getElementById('multi-opp-name').textContent = _multiOpponent;
-  document.getElementById('multi-my-score').textContent = '0';
-  document.getElementById('multi-opp-score').textContent = '0';
-  document.getElementById('multi-qtot').textContent = _multiTotal;
-  document.getElementById('multi-prog').style.width = '0%';
-
-  goPage('multi-scr');
-  showMultiQuestion();
-}
-
-function genMultiQuestions(n){
-  var qs = [];
-  for(var i = 0; i < n; i++){
-    var ops = ['+','-','x'];
-    var op = ops[Math.floor(Math.random()*ops.length)];
-    var a = Math.floor(Math.random()*20)+1;
-    var b = Math.floor(Math.random()*20)+1;
+function genMultiQuestionsSeeded(n, seed){
+  var qs=[], s=seed||Date.now();
+  for(var i=0;i<n;i++){
+    var ops=['+','-','x'];
+    var op=ops[Math.floor(_srng(s+i*3)*3)];
+    var a=Math.floor(_srng(s+i*3+1)*20)+1;
+    var b=Math.floor(_srng(s+i*3+2)*20)+1;
     var ans;
-    if(op==='+') ans = a+b;
+    if(op==='+') ans=a+b;
     else if(op==='-'){ if(a<b){var t=a;a=b;b=t;} ans=a-b; }
-    else ans = a*b;
-    // Generate 3 wrong answers
-    var wrongs = [];
-    while(wrongs.length < 3){
-      var w = ans + (Math.floor(Math.random()*10)-5);
-      if(w !== ans && w > 0 && !wrongs.includes(w)) wrongs.push(w);
+    else ans=a*b;
+    var wrongs=[],wi=0;
+    while(wrongs.length<3){
+      var w=ans+Math.floor(_srng(s+i*10+wi)*10)-4; wi++;
+      if(w!==ans&&w>0&&!wrongs.includes(w)) wrongs.push(w);
     }
-    var opts = [ans].concat(wrongs).sort(function(){ return Math.random()-0.5; });
-    qs.push({q: a + ' ' + op + ' ' + b + ' = ?', ans: ans, opts: opts});
+    var opts=[ans].concat(wrongs).sort(function(){ return _srng(s+i*100+Math.random())-0.5; });
+    qs.push({q:a+' '+op+' '+b+' = ?', ans:ans, opts:opts});
   }
   return qs;
 }
 
-function showMultiQuestion(){
-  if(_multiQIdx >= _multiTotal){ endMultiGame(); return; }
-  var q = _multiQs[_multiQIdx];
-  document.getElementById('multi-question').textContent = q.q;
-  document.getElementById('multi-qnum').textContent = _multiQIdx + 1;
-  document.getElementById('multi-prog').style.width = ((_multiQIdx/_multiTotal)*100) + '%';
+// Keep old genMultiQuestions for fallback
+function genMultiQuestions(n){ return genMultiQuestionsSeeded(n, Date.now()); }
 
-  var opts = document.getElementById('multi-options');
-  opts.innerHTML = '';
-  q.opts.forEach(function(opt){
-    var btn = document.createElement('button');
-    btn.textContent = opt;
-    btn.style.cssText = 'background:var(--s2);border:1.5px solid var(--bdr2);border-radius:14px;padding:16px;font-size:20px;font-weight:900;color:var(--fg);cursor:pointer;font-family:var(--mono);transition:all .15s';
-    btn.onmousedown = function(){ btn.style.transform='scale(.96)'; };
-    btn.onclick = function(){ answerMulti(opt, q.ans, btn, opts); };
-    opts.appendChild(btn);
+// ── Subscribe to MY invite notification channel ──
+function subscribeInviteChannel(){
+  if(!CU) return;
+  var sb=getSupabase();
+  if(_inviteChannel){ try{sb.removeChannel(_inviteChannel);}catch(e){} _inviteChannel=null; }
+  _inviteChannel = sb.channel('invite_notify:'+CU)
+    .on('broadcast',{event:'game_start'},function(payload){
+      var d=payload.payload;
+      showToast(d.host+' ସହ ଖେଳ ଆରମ୍ଭ ହେଉଛି! 🎮');
+      setTimeout(function(){ _joinMultiRoom(d.room_id, d.seed, d.host, false); }, 800);
+    })
+    .subscribe();
+}
+
+// ── HOST: Accept invite → create room + notify sender ──
+async function replyInvite(id, status, from){
+  var useSupabase = SUPABASE_URL.indexOf('YOUR_PROJECT_ID')===-1;
+  if(!useSupabase){ showToast(status==='accepted'?'Invite accepted! (Demo mode)':'Declined.'); loadInvites(); return; }
+  try{
+    var sb=getSupabase();
+    await sb.from('game_invites').update({status:status}).eq('id',id);
+    if(status==='accepted'){
+      var roomId = 'room_'+CU+'_'+from+'_'+Date.now();
+      var seed   = Date.now();
+      // Notify the sender (they are listening on invite_notify:from)
+      var notifCh = sb.channel('invite_notify:'+from);
+      await notifCh.subscribe(async function(s){
+        if(s==='SUBSCRIBED'){
+          await notifCh.send({type:'broadcast',event:'game_start',payload:{room_id:roomId,seed:seed,host:CU}});
+          showToast('Challenge accepted! Starting game... 🔥');
+          setTimeout(function(){ _joinMultiRoom(roomId, seed, CU, true, from); }, 600);
+        }
+      });
+    } else {
+      showToast('Invite declined.');
+    }
+    loadInvites();
+  }catch(e){ showToast('Error: '+e.message); }
+}
+
+// ── JOIN a real multiplayer room ──
+function _joinMultiRoom(roomId, seed, host, isHost, opponentArg){
+  _multiRoomId   = roomId;
+  _multiIsHost   = isHost;
+  _multiSeed     = seed;
+  _multiOpponent = isHost ? (opponentArg||'Opponent') : host;
+  _multiMyScore  = 0;
+  _multiOppScore = 0;
+  _multiQIdx     = 0;
+  _multiAnswered = false;
+  _multiQs       = genMultiQuestionsSeeded(_multiTotal, seed);
+
+  // Reset UI
+  document.getElementById('multi-vs-label').textContent  = 'vs '+_multiOpponent;
+  document.getElementById('multi-my-name').textContent   = CU||'You';
+  document.getElementById('multi-opp-name').textContent  = _multiOpponent;
+  document.getElementById('multi-my-score').textContent  = '0';
+  document.getElementById('multi-opp-score').textContent = '0';
+  document.getElementById('multi-qtot').textContent      = _multiTotal;
+  document.getElementById('multi-prog').style.width      = '0%';
+
+  // Supabase Realtime channel
+  var sb=getSupabase();
+  if(_multiChannel){ try{sb.removeChannel(_multiChannel);}catch(e){} _multiChannel=null; }
+
+  _multiChannel = sb.channel('game_room:'+roomId, {config:{broadcast:{ack:false}}})
+    .on('broadcast',{event:'score_update'},function(payload){
+      var d=payload.payload;
+      if(d.player!==CU){
+        _multiOppScore=d.total;
+        document.getElementById('multi-opp-score').textContent=_multiOppScore;
+        // Show opponent answered indicator
+        showToast(_multiOpponent+' answered! +'+d.gained+' pts', 800);
+      }
+    })
+    .on('broadcast',{event:'next_question'},function(payload){
+      // Host sent next question signal
+      if(!_multiIsHost){
+        _multiQIdx=payload.payload.qIdx;
+        _multiAnswered=false;
+        showMultiQuestion();
+      }
+    })
+    .on('broadcast',{event:'game_over'},function(){
+      if(!_multiIsHost) endMultiGame();
+    })
+    .subscribe(function(status){
+      if(status==='SUBSCRIBED'){
+        // Small stagger so both are ready
+        setTimeout(function(){
+          goPage('multi-scr');
+          showMultiQuestion();
+        }, isHost ? 300 : 100);
+      }
+    });
+}
+
+// ── Fallback: solo vs bot (when Supabase not configured) ──
+function startMultiGame(opponent){
+  _multiOpponent = opponent||_curViewUser||'Bot';
+  _multiMyScore=0; _multiOppScore=0; _multiQIdx=0;
+  _multiQs=genMultiQuestions(_multiTotal);
+  _multiRoomId=null; _multiIsHost=false;
+  document.getElementById('multi-vs-label').textContent  = 'vs '+_multiOpponent+' 🤖';
+  document.getElementById('multi-my-name').textContent   = CU||'You';
+  document.getElementById('multi-opp-name').textContent  = _multiOpponent+' (Bot)';
+  document.getElementById('multi-my-score').textContent  = '0';
+  document.getElementById('multi-opp-score').textContent = '0';
+  document.getElementById('multi-qtot').textContent      = _multiTotal;
+  document.getElementById('multi-prog').style.width      = '0%';
+  goPage('multi-scr');
+  showMultiQuestion();
+}
+
+function showMultiQuestion(){
+  if(_multiQIdx>=_multiTotal){ endMultiGame(); return; }
+  var q=_multiQs[_multiQIdx];
+  document.getElementById('multi-question').textContent = q.q;
+  document.getElementById('multi-qnum').textContent     = _multiQIdx+1;
+  document.getElementById('multi-prog').style.width     = ((_multiQIdx/_multiTotal)*100)+'%';
+  _multiAnswered=false;
+
+  var opts=document.getElementById('multi-options');
+  opts.innerHTML='';
+  q.opts.forEach(function(o){
+    var b=document.createElement('button');
+    b.className='ans-btn';
+    b.textContent=o;
+    b.onclick=function(){ answerMulti(o,q.ans,b,opts); };
+    opts.appendChild(b);
   });
 
   // Timer
   clearInterval(_multiTimerID);
-  _multiTimer = 15;
-  document.getElementById('multi-timer').textContent = _multiTimer;
-  _multiTimerID = setInterval(function(){
+  _multiTimer=15;
+  document.getElementById('multi-timer').textContent=_multiTimer;
+  _multiTimerID=setInterval(function(){
     _multiTimer--;
-    document.getElementById('multi-timer').textContent = _multiTimer;
-    // Opponent answers randomly between 5-12s
-    if(_multiTimer === Math.floor(Math.random()*7)+5){
-      var oppCorrect = Math.random() > 0.35; // 65% chance opponent is correct
-      if(oppCorrect){ _multiOppScore += 10; document.getElementById('multi-opp-score').textContent = _multiOppScore; }
+    document.getElementById('multi-timer').textContent=_multiTimer;
+
+    // BOT mode: opponent answers randomly
+    if(!_multiRoomId && _multiTimer===Math.floor(Math.random()*7)+5){
+      var c=Math.random()>0.35;
+      if(c){ _multiOppScore+=10; document.getElementById('multi-opp-score').textContent=_multiOppScore; }
     }
-    if(_multiTimer <= 0){
+
+    if(_multiTimer<=0){
       clearInterval(_multiTimerID);
-      _multiQIdx++;
-      setTimeout(showMultiQuestion, 500);
+      // Auto-submit timeout (0 points) in real mode
+      if(_multiRoomId && !_multiAnswered){
+        _multiAnswered=true;
+        _broadcastScore(0);
+      }
+      _advanceQuestion();
     }
-  }, 1000);
+  },1000);
+}
+
+function _broadcastScore(gained){
+  if(!_multiChannel) return;
+  _multiChannel.send({
+    type:'broadcast', event:'score_update',
+    payload:{ player:CU, gained:gained, total:_multiMyScore }
+  });
+}
+
+function _advanceQuestion(){
+  _multiQIdx++;
+  if(_multiIsHost||!_multiRoomId){
+    // Host / bot mode controls flow
+    setTimeout(function(){
+      if(_multiRoomId && _multiChannel){
+        if(_multiQIdx>=_multiTotal){
+          _multiChannel.send({type:'broadcast',event:'game_over',payload:{}});
+          endMultiGame();
+        } else {
+          _multiChannel.send({type:'broadcast',event:'next_question',payload:{qIdx:_multiQIdx}});
+          showMultiQuestion();
+        }
+      } else {
+        showMultiQuestion();
+      }
+    }, 600);
+  }
+  // Non-host waits for next_question broadcast (handled in channel listener)
 }
 
 function answerMulti(chosen, correct, btn, opts){
+  if(_multiAnswered) return;
+  _multiAnswered=true;
   clearInterval(_multiTimerID);
-  // Disable all buttons
+
   Array.from(opts.children).forEach(function(b){
-    b.onclick = null;
-    b.style.opacity = '0.5';
-    if(parseInt(b.textContent) === correct) b.style.borderColor = '#00f5a0';
+    b.onclick=null; b.style.opacity='0.6';
+    if(b.textContent==correct) b.classList.add('reveal');
   });
 
-  if(chosen === correct){
-    _multiMyScore += 10 + _multiTimer; // bonus for speed
-    btn.style.borderColor = '#00f5a0';
-    btn.style.background = 'rgba(0,245,160,.12)';
-    document.getElementById('multi-my-score').textContent = _multiMyScore;
-    showToast('+' + (10+_multiTimer) + ' pts!');
+  var gained=0;
+  if(chosen===correct){
+    gained=10+_multiTimer;
+    _multiMyScore+=gained;
+    btn.classList.add('correct');
+    document.getElementById('multi-my-score').textContent=_multiMyScore;
+    showToast('+'+gained+' pts! ⚡');
   } else {
-    btn.style.borderColor = 'var(--red,#f43f5e)';
-    btn.style.background = 'rgba(244,63,94,.1)';
-    showToast('Wrong! -0 pts');
+    btn.classList.add('wrong');
+    showToast('Wrong! 😬');
   }
 
-  _multiQIdx++;
-  setTimeout(showMultiQuestion, 800);
+  // Broadcast to opponent
+  if(_multiRoomId) _broadcastScore(gained);
+
+  // Advance after short delay
+  setTimeout(function(){ _advanceQuestion(); }, 700);
 }
 
 function endMultiGame(){
   clearInterval(_multiTimerID);
-  document.getElementById('mr-my-name').textContent = CU || 'You';
+  if(_multiChannel){
+    try{getSupabase().removeChannel(_multiChannel);}catch(e){}
+    _multiChannel=null;
+  }
+  document.getElementById('mr-my-name').textContent  = CU||'You';
   document.getElementById('mr-opp-name').textContent = _multiOpponent;
   document.getElementById('mr-my-score').textContent = _multiMyScore;
-  document.getElementById('mr-opp-score').textContent = _multiOppScore;
-
-  var won = _multiMyScore > _multiOppScore;
-  var draw = _multiMyScore === _multiOppScore;
-  document.getElementById('multi-result-emoji').textContent = won ? '🏆' : draw ? '🤝' : '😭';
-  document.getElementById('multi-result-title').textContent = won ? 'You Won!' : draw ? "It's a Draw!" : _multiOpponent + ' Won!';
-  document.getElementById('multi-result-sub').textContent = 'Your score: ' + _multiMyScore + ' pts  |  ' + _multiOpponent + ': ' + _multiOppScore + ' pts';
-
+  document.getElementById('mr-opp-score').textContent= _multiOppScore;
+  var won=_multiMyScore>_multiOppScore, draw=_multiMyScore===_multiOppScore;
+  document.getElementById('multi-result-emoji').textContent = won?'🏆':draw?'🤝':'😭';
+  document.getElementById('multi-result-title').textContent = won?'You Won!':draw?"It's a Draw!":_multiOpponent+' Won!';
+  document.getElementById('multi-result-sub').textContent   = 'Your score: '+_multiMyScore+' pts  |  '+_multiOpponent+': '+_multiOppScore+' pts';
   goPage('multi-result-scr');
-  showToast(won ? 'Great game! 🏆' : draw ? 'Close game! 🤝' : 'Better luck next time!');
+  showToast(won?'Great game! 🏆':draw?'Close game! 🤝':'Better luck next time!');
 }
 
 function exitMulti(){
   clearInterval(_multiTimerID);
+  if(_multiChannel){ try{getSupabase().removeChannel(_multiChannel);}catch(e){} _multiChannel=null; }
   goPage('search-scr');
 }
 
-// // ── SEND INVITE ──
+// ── SEND INVITE ──
 async function sendInvite(){
   if(!CU){ showToast('Sign in first'); return; }
-  if(_curViewUser === CU){ showToast('Cannot invite yourself!'); return; }
-
-  var btn = document.getElementById('vp-inv-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<span style="opacity:.6">Sending...</span>';
-
-  var useSupabase = SUPABASE_URL.indexOf('YOUR_PROJECT_ID') === -1;
-
+  if(_curViewUser===CU){ showToast('Cannot invite yourself!'); return; }
+  var btn=document.getElementById('vp-inv-btn');
+  btn.disabled=true;
+  btn.innerHTML='<span style="opacity:.6">Sending...</span>';
+  var useSupabase=SUPABASE_URL.indexOf('YOUR_PROJECT_ID')===-1;
   if(useSupabase){
     try{
-      var sb = getSupabase();
-      var {data: sp} = await sb.from('profiles').select('id').eq('username', CU).maybeSingle();
-      var {data: rp} = await sb.from('profiles').select('id').eq('username', _curViewUser).maybeSingle();
-      if(!sp || !rp){ showToast('Player not found'); }
+      var sb=getSupabase();
+      var {data:sp}=await sb.from('profiles').select('id').eq('username',CU).maybeSingle();
+      var {data:rp}=await sb.from('profiles').select('id').eq('username',_curViewUser).maybeSingle();
+      if(!sp||!rp){ showToast('Player not found'); }
       else {
-        var {data: ex} = await sb.from('game_invites')
-          .select('id').eq('sender_id', sp.id).eq('receiver_id', rp.id).eq('status','pending').maybeSingle();
+        var {data:ex}=await sb.from('game_invites').select('id').eq('sender_id',sp.id).eq('receiver_id',rp.id).eq('status','pending').maybeSingle();
         if(ex){ showToast('Invite already pending!'); }
         else {
-          var {error} = await sb.from('game_invites').insert({
-            sender_id: sp.id, sender_username: CU,
-            receiver_id: rp.id, receiver_username: _curViewUser,
-            status: 'pending', created_at: new Date().toISOString()
+          var {error}=await sb.from('game_invites').insert({
+            sender_id:sp.id, sender_username:CU,
+            receiver_id:rp.id, receiver_username:_curViewUser,
+            status:'pending', created_at:new Date().toISOString()
           });
-          if(error) showToast('Error: ' + error.message);
-          else showToast('Invite sent to ' + _curViewUser + '! 🎮');
+          if(error) showToast('Error: '+error.message);
+          else {
+            showToast('Invite sent to '+_curViewUser+'! 🎮');
+            // Start listening for game-start signal
+            subscribeInviteChannel();
+          }
         }
       }
     }catch(e){ showToast('Network error'); }
   } else {
-    showToast('Invite sent to ' + _curViewUser + '! 🎮 (simulation)');
+    showToast('Invite sent to '+_curViewUser+'! 🎮 (Demo mode)');
   }
-
-  btn.disabled = false;
-  btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Invite to Play';
+  btn.disabled=false;
+  btn.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Invite to Play';
 }
 
 // ── LOAD INVITES ──
 async function loadInvites(){
   if(!CU) return;
-  var listEl = document.getElementById('inv-list');
+  var listEl=document.getElementById('inv-list');
   if(!listEl) return;
-  listEl.innerHTML = '<div style="color:var(--muted2);text-align:center;padding:20px">Loading...</div>';
-
-  var useSupabase = SUPABASE_URL.indexOf('YOUR_PROJECT_ID') === -1;
+  listEl.innerHTML='<div style="color:var(--muted2);text-align:center;padding:20px">Loading...</div>';
+  var useSupabase=SUPABASE_URL.indexOf('YOUR_PROJECT_ID')===-1;
   if(!useSupabase){
-    listEl.innerHTML = '<div class="search-empty"><div class="search-empty-icon">🎮</div>Connect Supabase to see invites</div>';
+    listEl.innerHTML='<div class="search-empty"><div class="search-empty-icon">🎮</div>Connect Supabase to see invites</div>';
     return;
   }
-
   try{
-    var sb = getSupabase();
-    var {data: me} = await sb.from('profiles').select('id').eq('username', CU).maybeSingle();
-    if(!me){ listEl.innerHTML = '<div class="search-empty">Profile not found</div>'; return; }
-
-    var {data: invs} = await sb.from('game_invites')
-      .select('*').eq('receiver_id', me.id).eq('status','pending')
-      .order('created_at', {ascending:false});
-
-    var dot = document.getElementById('inv-dot');
-    if(dot) dot.style.display = (invs && invs.length) ? 'block' : 'none';
-
-    if(!invs || !invs.length){
-      listEl.innerHTML = '<div class="search-empty"><div class="search-empty-icon">🎮</div>No pending invites</div>';
-      return;
-    }
-
-    var html = '';
+    var sb=getSupabase();
+    var {data:me}=await sb.from('profiles').select('id').eq('username',CU).maybeSingle();
+    if(!me){ listEl.innerHTML='<div class="search-empty">Profile not found</div>'; return; }
+    var {data:invs}=await sb.from('game_invites').select('*').eq('receiver_id',me.id).eq('status','pending').order('created_at',{ascending:false});
+    var dot=document.getElementById('inv-dot');
+    if(dot) dot.style.display=(invs&&invs.length)?'block':'none';
+    if(!invs||!invs.length){ listEl.innerHTML='<div class="search-empty"><div class="search-empty-icon">🎮</div>No pending invites</div>'; return; }
+    var html='';
     invs.forEach(function(inv){
-      var from = inv.sender_username || 'Unknown';
-      html += '<div class="inv-item">';
-      html += '<div class="pl-av" style="width:38px;height:38px;font-size:16px">' + from[0].toUpperCase() + '</div>';
-      html += '<div><div class="inv-from">' + from + '</div><div class="inv-sub">Wants to play with you!</div></div>';
-      html += '<div class="inv-actions">';
-      html += '<button class="inv-acc" data-id="' + inv.id + '" data-from="' + from + '">Accept</button>';
-      html += '<button class="inv-rej" data-id="' + inv.id + '">Decline</button>';
-      html += '</div></div>';
+      var from=inv.sender_username||'Unknown';
+      html+='<div class="inv-item">';
+      html+='<div class="pl-av" style="width:38px;height:38px;font-size:16px">'+from[0].toUpperCase()+'</div>';
+      html+='<div><div class="inv-from">'+from+'</div><div class="inv-sub">Wants to play with you!</div></div>';
+      html+='<div class="inv-actions">';
+      html+='<button class="inv-acc" data-id="'+inv.id+'" data-from="'+from+'">Accept</button>';
+      html+='<button class="inv-rej" data-id="'+inv.id+'">Decline</button>';
+      html+='</div></div>';
     });
-    listEl.innerHTML = html;
-
-    listEl.onclick = async function(e){
-      var acc = e.target.closest('.inv-acc');
-      var rej = e.target.closest('.inv-rej');
-      if(acc) await replyInvite(acc.dataset.id, 'accepted', acc.dataset.from);
-      if(rej) await replyInvite(rej.dataset.id, 'rejected', '');
+    listEl.innerHTML=html;
+    listEl.onclick=async function(e){
+      var acc=e.target.closest('.inv-acc');
+      var rej=e.target.closest('.inv-rej');
+      if(acc) await replyInvite(acc.dataset.id,'accepted',acc.dataset.from);
+      if(rej) await replyInvite(rej.dataset.id,'rejected','');
     };
-  }catch(e){
-    listEl.innerHTML = '<div class="search-empty">Error loading invites</div>';
-  }
+  }catch(e){ listEl.innerHTML='<div class="search-empty">Error loading invites</div>'; }
 }
 
-async function replyInvite(id, status, from){
-  var useSupabase = SUPABASE_URL.indexOf('YOUR_PROJECT_ID') === -1;
-  if(!useSupabase) return;
-  try{
-    var sb = getSupabase();
-    await sb.from('game_invites').update({status:status}).eq('id', id);
-    if(status === 'accepted'){
-      showToast('Challenge accepted! Get ready vs ' + from + '! 🔥');
-      setTimeout(function(){ showToast('Multiplayer mode coming soon! 🚀'); }, 2000);
-    } else {
-      showToast('Invite declined.');
-    }
-    loadInvites();
-  }catch(e){ showToast('Error'); }
-}
-
-// Auto-check invites every 30s when logged in
-setInterval(function(){ if(CU) loadInvites(); }, 30000);
+// Auto-check invites every 30s + subscribe invite channel on login
+setInterval(function(){ if(CU){ loadInvites(); subscribeInviteChannel(); } }, 30000);
 
 
 async function doLogout(){
