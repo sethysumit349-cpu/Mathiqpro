@@ -63,13 +63,14 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
   display:flex;flex-direction:column;
   overflow-y:auto;overflow-x:hidden;
   -webkit-overflow-scrolling:touch;
-  opacity:0;pointer-events:none;
-  transition:opacity .3s ease,transform .3s ease;
+  visibility:hidden;pointer-events:none;
+  transition:visibility 0s .3s, transform .3s ease;
   transform:translateX(50px);
-  will-change:opacity,transform;
+  will-change:transform;
+  background:var(--bg);
 }
-.scr.show{opacity:1;pointer-events:all;transform:translateX(0)!important}
-.scr.slide-out{opacity:0;transform:translateX(-50px)!important;pointer-events:none}
+.scr.show{visibility:visible;pointer-events:all;transform:translateX(0)!important;transition:visibility 0s, transform .3s ease;}
+.scr.slide-out{visibility:hidden;transform:translateX(-50px)!important;pointer-events:none;transition:visibility 0s .3s, transform .3s ease;}
 .scr::-webkit-scrollbar{display:none}
 .pad{padding:20px 18px 48px}
 
@@ -935,7 +936,100 @@ input,textarea{-webkit-user-select:text!important;user-select:text!important;fon
 <body>
 <div id="app">
 
-<!-- ═══════════ SPLASH / AUTH ═══════════ -->
+/* ── SKETCHA-STYLE INTRO SCREEN ── */
+#intro-scr{
+  position:fixed;inset:0;background:#05050f;z-index:9999;
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:56px 28px 44px;overflow:hidden;
+}
+#intro-scr.hide-intro{
+  animation:introFadeOut .5s ease forwards;
+  pointer-events:none;
+}
+@keyframes introFadeOut{
+  to{opacity:0;transform:scale(.97);}
+}
+.intro-line{
+  opacity:0;transform:translateY(32px);
+  animation:lineUp .6s cubic-bezier(.22,1,.36,1) forwards;
+}
+@keyframes lineUp{
+  to{opacity:1;transform:translateY(0);}
+}
+.intro-eyebrow{
+  font-size:11px;letter-spacing:4px;color:#ffe033;font-weight:800;
+  text-transform:uppercase;
+}
+.intro-big{
+  font-size:clamp(42px,12vw,64px);font-weight:900;line-height:1.05;
+  color:#f2f2ff;letter-spacing:-1px;
+}
+.intro-big .hi{color:#ffe033;}
+.intro-big .dim{color:#2a2a5a;}
+.intro-desc{
+  font-size:15px;color:#6868a8;font-weight:600;line-height:1.6;
+  max-width:300px;
+}
+.intro-btns{display:flex;flex-direction:column;gap:12px;}
+.intro-btn-main{
+  width:100%;padding:17px;border-radius:16px;border:none;
+  background:#ffe033;color:#05050f;font-size:17px;font-weight:900;
+  cursor:pointer;letter-spacing:.3px;
+  transition:transform .15s,opacity .15s;
+}
+.intro-btn-main:active{transform:scale(.97);opacity:.85;}
+.intro-btn-sec{
+  width:100%;padding:15px;border-radius:16px;
+  background:transparent;border:1.5px solid #2a2a4a;
+  color:#f2f2ff;font-size:16px;font-weight:700;cursor:pointer;
+  transition:border-color .2s,transform .15s;
+}
+.intro-btn-sec:active{transform:scale(.97);}
+.intro-tag{
+  display:flex;gap:16px;align-items:center;
+}
+.intro-tag span{
+  font-size:12px;color:#3a3a6a;font-weight:700;letter-spacing:1px;
+  text-transform:uppercase;
+}
+.intro-dot{width:4px;height:4px;border-radius:50%;background:#2a2a4a;}
+
+<!-- ═══════════ INTRO SCREEN (SKETCHA STYLE) ═══════════ -->
+<div id="intro-scr">
+
+  <!-- Top tag -->
+  <div>
+    <div class="intro-tag intro-line" style="animation-delay:.1s">
+      <span>MathIQ Pro</span>
+      <div class="intro-dot"></div>
+      <span>Mental Math</span>
+      <div class="intro-dot"></div>
+      <span>Free</span>
+    </div>
+  </div>
+
+  <!-- Big bold text -->
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div class="intro-eyebrow intro-line" style="animation-delay:.25s">Train your brain</div>
+    <div class="intro-big intro-line" style="animation-delay:.4s">
+      Think<br><span class="hi">Fast.</span>
+    </div>
+    <div class="intro-big intro-line" style="animation-delay:.55s;margin-top:-8px">
+      Score<br><span class="hi">High.</span>
+    </div>
+    <div class="intro-desc intro-line" style="animation-delay:.75s;margin-top:16px">
+      Challenge friends, climb leaderboards, and become a math legend.
+    </div>
+  </div>
+
+  <!-- Buttons -->
+  <div class="intro-btns intro-line" style="animation-delay:.95s">
+    <button class="intro-btn-main" onclick="introGoAuth('signin')">Sign In &rarr;</button>
+    <button class="intro-btn-sec" onclick="introGoAuth('signup')">Create Free Account</button>
+  </div>
+
+</div>
+
 <div id="splash-scr" class="scr show">
   <!-- Animated floating math symbols -->
   <div class="math-bubble" style="left:8%;font-size:28px;color:#ffe033;top:72%;animation-duration:7s;animation-delay:0s">+</div>
@@ -1780,9 +1874,25 @@ input,textarea{-webkit-user-select:text!important;user-select:text!important;fon
   <button class="back-btn" onclick="goPage('home-scr')">&#8592; Back</button>
   <div class="screen-title">&#128269; Find Player</div>
   <div class="screen-sub">Search any player by username</div>
-  <div class="search-wrap">
-    <input class="auth-input" id="srch-inp" placeholder="Enter username..." maxlength="18" spellcheck="false" onkeydown="if(event.key==='Enter')doSearch()">
+  <div class="search-wrap" style="position:relative;flex-wrap:wrap">
+    <input class="auth-input" id="srch-inp" placeholder="Enter username..." maxlength="18" spellcheck="false" autocorrect="off" autocomplete="off" autocapitalize="off" inputmode="text" onkeydown="srchKeyNav(event)" oninput="onSearchInput(this.value)">
     <button class="btn-primary" onclick="doSearch()" style="padding:0 18px;border-radius:14px">Search</button>
+    <div id="srch-dropdown" style="display:none;position:absolute;top:52px;left:0;right:0;background:var(--s2);border:1.5px solid var(--bdr2);border-radius:14px;z-index:999;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.4)"></div>
+  </div>
+  <div id="srch-hint" style="font-size:12px;color:var(--muted2);margin:-6px 0 6px 4px;min-height:16px"></div>
+
+  <!-- LIVE TYPING DISPLAY -->
+  <div id="live-type-box" style="display:none;margin:8px 0 12px;padding:12px 16px;background:var(--s2);border:1.5px solid var(--gold);border-radius:14px;align-items:center;gap:10px">
+    <span style="font-size:18px">⌨️</span>
+    <div style="flex:1">
+      <div style="font-size:11px;color:var(--muted2);margin-bottom:2px">You are typing:</div>
+      <div id="live-type-text" style="font-size:17px;font-weight:800;color:var(--gold);letter-spacing:1px;word-break:break-all"></div>
+    </div>
+    <div id="live-type-count" style="font-size:11px;color:var(--muted2);white-space:nowrap"></div>
+  </div>
+
+  <div id="srch-label" style="display:none;font-size:13px;color:var(--muted2);margin:4px 0 10px 2px">
+    🔍 Showing results for: <b id="srch-label-val" style="color:var(--fg)"></b>
   </div>
   <div id="srch-res"></div>
 </div>
@@ -1802,9 +1912,13 @@ input,textarea{-webkit-user-select:text!important;user-select:text!important;fon
     <div class="prof-badges-label">Achievements</div>
     <div id="vp-badges" class="vp-badge-grid"></div>
   </div>
+  <button class="invite-btn" id="vp-play-btn" onclick="startMultiGame(_curViewUser)" style="background:linear-gradient(135deg,#059669,#0d9488);margin-top:10px">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3" fill="currentColor" stroke="none"/></svg>
+    Play Now (vs Bot)
+  </button>
   <button class="invite-btn" id="vp-inv-btn" onclick="sendInvite()">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-    Invite to Play
+    Send Invite
   </button>
 </div>
 </div>
@@ -1816,6 +1930,75 @@ input,textarea{-webkit-user-select:text!important;user-select:text!important;fon
   <div class="screen-title">&#127918; Invites</div>
   <div class="screen-sub">Challenges from other players</div>
   <div id="inv-list"></div>
+</div>
+</div>
+
+
+
+<!-- MULTIPLAYER GAME -->
+<div id="multi-scr" class="scr">
+<div class="pad" style="display:flex;flex-direction:column;height:100%">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+    <button class="back-btn" style="position:relative;margin:0" onclick="exitMulti()">&#8592;</button>
+    <div>
+      <div style="font-weight:900;font-size:16px;color:var(--fg)">&#127918; Multiplayer</div>
+      <div style="font-size:12px;color:var(--muted2)" id="multi-vs-label">vs Player</div>
+    </div>
+    <div style="margin-left:auto;text-align:right">
+      <div style="font-size:11px;color:var(--muted2)">Time</div>
+      <div style="font-family:var(--mono);font-size:20px;font-weight:900;color:var(--cyan)" id="multi-timer">15</div>
+    </div>
+  </div>
+
+  <!-- Scores -->
+  <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;margin-bottom:16px">
+    <div style="background:var(--s2);border:1.5px solid var(--gold);border-radius:14px;padding:12px;text-align:center">
+      <div style="font-size:11px;color:var(--muted2);margin-bottom:2px" id="multi-my-name">You</div>
+      <div style="font-size:28px;font-weight:900;color:var(--gold);font-family:var(--mono)" id="multi-my-score">0</div>
+    </div>
+    <div style="display:flex;align-items:center;font-weight:900;color:var(--muted2);font-size:16px">VS</div>
+    <div style="background:var(--s2);border:1.5px solid var(--bdr2);border-radius:14px;padding:12px;text-align:center">
+      <div style="font-size:11px;color:var(--muted2);margin-bottom:2px" id="multi-opp-name">Opponent</div>
+      <div style="font-size:28px;font-weight:900;color:var(--cyan);font-family:var(--mono)" id="multi-opp-score">0</div>
+    </div>
+  </div>
+
+  <!-- Question -->
+  <div style="background:var(--s2);border:1.5px solid var(--bdr2);border-radius:18px;padding:24px;text-align:center;margin-bottom:16px">
+    <div style="font-size:13px;color:var(--muted2);margin-bottom:8px">Question <span id="multi-qnum">1</span> / <span id="multi-qtot">10</span></div>
+    <div style="font-size:32px;font-weight:900;color:var(--fg);font-family:var(--mono);letter-spacing:1px" id="multi-question">...</div>
+  </div>
+
+  <!-- Answer Options -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;flex:1" id="multi-options"></div>
+
+  <!-- Progress bar -->
+  <div style="height:4px;background:var(--s3);border-radius:4px;margin-top:14px;overflow:hidden">
+    <div id="multi-prog" style="height:100%;background:var(--gold);border-radius:4px;transition:width .3s;width:0%"></div>
+  </div>
+</div>
+</div>
+
+<!-- MULTIPLAYER RESULT -->
+<div id="multi-result-scr" class="scr">
+<div class="pad" style="text-align:center">
+  <div style="font-size:52px;margin:20px 0" id="multi-result-emoji">🏆</div>
+  <div style="font-size:24px;font-weight:900;color:var(--fg);margin-bottom:6px" id="multi-result-title">You Won!</div>
+  <div style="font-size:14px;color:var(--muted2);margin-bottom:24px" id="multi-result-sub"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px">
+    <div style="background:var(--s2);border:1.5px solid var(--gold);border-radius:14px;padding:16px">
+      <div style="font-size:11px;color:var(--muted2);margin-bottom:4px" id="mr-my-name">You</div>
+      <div style="font-size:32px;font-weight:900;color:var(--gold);font-family:var(--mono)" id="mr-my-score">0</div>
+      <div style="font-size:11px;color:var(--muted2)">points</div>
+    </div>
+    <div style="background:var(--s2);border:1.5px solid var(--bdr2);border-radius:14px;padding:16px">
+      <div style="font-size:11px;color:var(--muted2);margin-bottom:4px" id="mr-opp-name">Opponent</div>
+      <div style="font-size:32px;font-weight:900;color:var(--cyan);font-family:var(--mono)" id="mr-opp-score">0</div>
+      <div style="font-size:11px;color:var(--muted2)">points</div>
+    </div>
+  </div>
+  <button class="btn-primary" onclick="goPage('home-scr')" style="margin-bottom:10px">&#8962; Home</button>
+  <button class="btn-secondary" onclick="startMultiGame(_multiOpponent)" style="margin-bottom:10px">&#8635; Play Again</button>
 </div>
 </div>
 
@@ -2932,6 +3115,33 @@ var authMode = 'login';
 var _pendingUser = '';
 var _pendingEmail = '';
 
+function introGoAuth(mode){
+  var intro = document.getElementById('intro-scr');
+  intro.classList.add('hide-intro');
+  setTimeout(function(){
+    intro.style.display = 'none';
+    // Set signin or signup mode
+    if(mode === 'signup') toggleAuthToSignup();
+  }, 480);
+}
+
+function toggleAuthToSignup(){
+  // Switch the form to signup mode if not already
+  var cta = document.getElementById('auth-cta');
+  var sw  = document.getElementById('auth-switch');
+  var h   = document.getElementById('auth-h');
+  var sub = document.getElementById('auth-sub-txt');
+  var emailWrap = document.getElementById('email-field-wrap');
+  if(cta && cta.textContent.indexOf('Sign') !== -1){
+    // currently on signin, switch to signup
+    if(h) h.textContent = 'Create account';
+    if(sub) sub.textContent = 'Join free and start your streak';
+    if(cta){ cta.textContent = 'Create Account →'; }
+    if(sw) sw.innerHTML = 'Already have an account? <b>Sign In</b>';
+    if(emailWrap) emailWrap.style.display = 'block';
+  }
+}
+
 function toggleAuth(){
   authMode = authMode === 'login' ? 'register' : 'login';
   var isReg = authMode === 'register';
@@ -3072,18 +3282,165 @@ var _curViewUser = '';
 function initSearch(){
   var inp = document.getElementById('srch-inp');
   var res = document.getElementById('srch-res');
-  if(inp) inp.value = '';
-  if(res) res.innerHTML = '';
+  var hint = document.getElementById('srch-hint');
+  var lbl = document.getElementById('srch-label');
+  var liveBox = document.getElementById('live-type-box');
+  if(inp){ inp.value = ''; inp.focus(); }
+  if(res) res.innerHTML = '<div class="search-empty" style="padding:20px 0"><div class="search-empty-icon" style="font-size:28px">&#128101;</div>Search a player by username</div>';
+  if(hint) hint.textContent = '';
+  if(lbl) lbl.style.display = 'none';
+  if(liveBox) liveBox.style.display = 'none';
 }
 
-async function doSearch(){
-  var q = (document.getElementById('srch-inp').value || '').trim().toLowerCase();
-  var res = document.getElementById('srch-res');
-  if(!q || q.length < 2){
-    res.innerHTML = '<div class="search-empty"><div class="search-empty-icon">⚠️</div>Enter at least 2 characters</div>';
+var _srchTimer = null;
+var _srchActiveIdx = -1;
+
+function onSearchInput(val){
+  var hint = document.getElementById('srch-hint');
+  var dd = document.getElementById('srch-dropdown');
+  var liveBox = document.getElementById('live-type-box');
+  var liveText = document.getElementById('live-type-text');
+  var liveCount = document.getElementById('live-type-count');
+  _srchActiveIdx = -1;
+
+  // --- LIVE TYPING DISPLAY ---
+  if(val && val.length > 0){
+    liveBox.style.display = 'flex';
+    liveText.textContent = val;
+    liveCount.textContent = val.length + '/18';
+  } else {
+    liveBox.style.display = 'none';
+    liveText.textContent = '';
+    liveCount.textContent = '';
+  }
+
+  if(!val){ 
+    if(hint) hint.textContent = '';
+    if(dd) dd.style.display = 'none';
+    return; 
+  }
+  if(val.length < 2){ 
+    if(hint) hint.textContent = 'Type at least 2 characters...';
+    if(dd) dd.style.display = 'none';
+    return; 
+  }
+  if(hint) hint.textContent = 'Press Search or Enter';
+
+  // Debounce live suggestions
+  clearTimeout(_srchTimer);
+  _srchTimer = setTimeout(function(){ fetchSuggestions(val); }, 300);
+}
+
+async function fetchSuggestions(val){
+  var dd = document.getElementById('srch-dropdown');
+  if(!dd) return;
+  var q = val.trim();
+  if(q.length < 2){ dd.style.display='none'; return; }
+
+  var suggestions = [];
+  var useSupabase = SUPABASE_URL.indexOf('YOUR_PROJECT_ID') === -1;
+
+  if(useSupabase){
+    try{
+      var sb = getSupabase();
+      var {data} = await sb.from('profiles').select('username').ilike('username','%'+q+'%').limit(6);
+      if(data) suggestions = data.map(function(p){ return p.username; });
+    }catch(e){ return; }
+  } else {
+    suggestions = Object.keys(DB).filter(function(k){
+      return !k.startsWith('__') && k.toLowerCase().includes(q.toLowerCase());
+    }).slice(0,6);
+  }
+
+  // Current input may have changed while waiting
+  var inp = document.getElementById('srch-inp');
+  if(!inp || inp.value.trim() !== q){ dd.style.display='none'; return; }
+
+  if(!suggestions.length){ dd.style.display='none'; return; }
+
+  dd.innerHTML = suggestions.map(function(u, i){
+    var hi = u.replace(new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'), '<b style="color:var(--gold,#ffe033)">$1</b>');
+    return '<div class="srch-sug-item" data-val="'+u+'" data-idx="'+i+'" onclick="pickSuggestion(\''+u+'\')" style="padding:12px 16px;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--bdr);background:var(--s2);color:var(--text)">' +
+      '<span style="font-size:18px">👤</span>' +
+      '<span>'+hi+'</span>' +
+      '</div>';
+  }).join('');
+  // Remove border from last item
+  var items = dd.querySelectorAll('.srch-sug-item');
+  if(items.length) items[items.length-1].style.borderBottom = 'none';
+  dd.style.display = 'block';
+}
+
+function pickSuggestion(username){
+  var inp = document.getElementById('srch-inp');
+  var dd = document.getElementById('srch-dropdown');
+  if(inp) inp.value = username;
+  if(dd) dd.style.display = 'none';
+  doSearch();
+}
+
+function srchKeyNav(e){
+  var dd = document.getElementById('srch-dropdown');
+  var items = dd ? dd.querySelectorAll('.srch-sug-item') : [];
+  if(e.key === 'ArrowDown'){
+    e.preventDefault();
+    _srchActiveIdx = Math.min(_srchActiveIdx+1, items.length-1);
+  } else if(e.key === 'ArrowUp'){
+    e.preventDefault();
+    _srchActiveIdx = Math.max(_srchActiveIdx-1, -1);
+  } else if(e.key === 'Enter'){
+    if(_srchActiveIdx >= 0 && items[_srchActiveIdx]){
+      pickSuggestion(items[_srchActiveIdx].dataset.val);
+    } else { doSearch(); }
+    return;
+  } else if(e.key === 'Escape'){
+    if(dd) dd.style.display = 'none';
+    _srchActiveIdx = -1;
     return;
   }
-  res.innerHTML = '<div class="search-empty">Searching...</div>';
+  // Highlight active item
+  items.forEach(function(el, i){
+    el.style.background = i === _srchActiveIdx ? 'var(--s3)' : 'var(--s2)';
+  });
+  if(_srchActiveIdx >= 0 && items[_srchActiveIdx]){
+    var inp = document.getElementById('srch-inp');
+    if(inp) inp.value = items[_srchActiveIdx].dataset.val;
+  }
+}
+
+// Hide dropdown when clicking outside
+document.addEventListener('click', function(e){
+  var dd = document.getElementById('srch-dropdown');
+  var wrap = document.querySelector('.search-wrap');
+  if(dd && wrap && !wrap.contains(e.target)) dd.style.display = 'none';
+});
+
+async function doSearch(){
+  var inp = document.getElementById('srch-inp');
+  var rawQ = (inp ? inp.value : '').trim();         // original casing preserved
+  var q = rawQ.toLowerCase();                        // lowercase only for comparison
+  console.log('Search input (raw):', rawQ);
+  console.log('Search query (for compare):', q);
+  var res = document.getElementById('srch-res');
+  var hint = document.getElementById('srch-hint');
+
+  if(!rawQ){
+    if(hint) hint.textContent = 'Please enter a username first!';
+    if(inp) inp.focus();
+    return;
+  }
+  if(rawQ.length < 2){
+    if(hint) hint.textContent = 'Enter at least 2 characters';
+    return;
+  }
+
+  if(hint) hint.textContent = '';
+  res.innerHTML = '<div class="search-empty"><div style="font-size:24px;margin-bottom:8px">&#8987;</div>Searching...</div>';
+
+  // Show "Showing results for: X" label
+  var lbl = document.getElementById('srch-label');
+  var lblVal = document.getElementById('srch-label-val');
+  if(lbl && lblVal){ lbl.style.display = 'block'; lblVal.textContent = rawQ; }
 
   var players = [];
   var useSupabase = SUPABASE_URL.indexOf('YOUR_PROJECT_ID') === -1;
@@ -3091,19 +3448,37 @@ async function doSearch(){
   if(useSupabase){
     try{
       var sb = getSupabase();
-      var {data, error} = await sb.from('profiles')
-        .select('username,game_data')
-        .ilike('username', '%' + q + '%')
-        .limit(10);
-      if(!error && data) players = data;
-    }catch(e){ console.warn('Search err', e); }
+      // Try exact match first (use rawQ to preserve original casing)
+      var exactRes = await sb.from('profiles').select('username,game_data').ilike('username', rawQ).limit(1);
+      console.log('Exact match result:', exactRes);
+      var exact = exactRes.data;
+      if(exactRes.error) console.warn('Exact search error:', exactRes.error);
+
+      // Then partial match (case-insensitive)
+      var partialRes = await sb.from('profiles').select('username,game_data').ilike('username', '%' + rawQ + '%').limit(10);
+      console.log('Partial match result:', partialRes);
+      var partial = partialRes.data;
+      if(partialRes.error) console.warn('Partial search error:', partialRes.error);
+
+      // Merge: exact first, then others
+      var seen = {};
+      if(exact) exact.forEach(function(p){ if(!seen[p.username]){ seen[p.username]=1; players.push(p); } });
+      if(partial) partial.forEach(function(p){ if(!seen[p.username]){ seen[p.username]=1; players.push(p); } });
+
+      // If Supabase returned an RLS/permission error, show helpful message
+      if(exactRes.error && exactRes.error.code === '42501'){
+        res.innerHTML = '<div class="search-empty"><div class="search-empty-icon">🔒</div>Search unavailable<br><span style="font-size:12px">Enable public read on profiles table in Supabase</span></div>';
+        return;
+      }
+    }catch(e){ console.warn('Search err', e); res.innerHTML = '<div class="search-empty">Connection error. Check internet.</div>'; return; }
   } else {
     Object.keys(DB).filter(function(k){ return !k.startsWith('__') && k.toLowerCase().includes(q); })
       .forEach(function(u){ players.push({username:u, game_data: DB[u]||{}}); });
+
   }
 
   if(!players.length){
-    res.innerHTML = '<div class="search-empty"><div class="search-empty-icon">🔍</div>No player found for "<b>' + q + '</b>"</div>';
+    res.innerHTML = '<div class="search-empty"><div class="search-empty-icon">&#128269;</div>No player found for "<b>' + rawQ + '</b>"<br><span style="font-size:12px">Check spelling and try again</span></div>';
     return;
   }
 
@@ -3116,7 +3491,7 @@ async function doSearch(){
     html += '<div class="pl-av">' + (p.username||'?')[0].toUpperCase() + '</div>';
     html += '<div class="pl-info">';
     html += '<div class="pl-name">' + p.username + (isMe ? ' <span style="font-size:11px;color:var(--gold)">(You)</span>' : '') + '</div>';
-    html += '<div class="pl-meta">Lv.' + lv.n + ' ' + lv.name + ' &nbsp;·&nbsp; Best: ' + (gd.best||0) + ' pts &nbsp;·&nbsp; ' + (gd.games||0) + ' games</div>';
+    html += '<div class="pl-meta">Level ' + lv.n + ' ' + lv.name + ' &nbsp;&middot;&nbsp; Best: ' + (gd.best||0) + ' pts &nbsp;&middot;&nbsp; ' + (gd.games||0) + ' games</div>';
     html += '</div>';
     html += '<svg class="pl-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>';
     html += '</div>';
@@ -3133,33 +3508,30 @@ async function openPlayer(username){
   _curViewUser = username;
   goPage('view-prof-scr');
 
-  // Reset UI
   document.getElementById('vp-av').textContent = (username||'?')[0].toUpperCase();
   document.getElementById('vp-name').textContent = username;
   document.getElementById('vp-lvl').textContent = 'Loading...';
   document.getElementById('vp-stats').innerHTML = '';
   document.getElementById('vp-badges').innerHTML = '<div style="color:var(--muted2);font-size:13px;padding:10px 0">Loading...</div>';
+
   var invBtn = document.getElementById('vp-inv-btn');
+  var playBtn = document.getElementById('vp-play-btn');
   if(invBtn) invBtn.style.display = username === CU ? 'none' : 'flex';
+  if(playBtn) playBtn.style.display = username === CU ? 'none' : 'flex';
 
   var gd = {};
   var useSupabase = SUPABASE_URL.indexOf('YOUR_PROJECT_ID') === -1;
-
   if(useSupabase){
     try{
       var sb = getSupabase();
       var {data} = await sb.from('profiles').select('game_data').eq('username', username).maybeSingle();
       if(data && data.game_data) gd = data.game_data;
     }catch(e){}
-  } else {
-    gd = DB[username] || {};
-  }
+  } else { gd = DB[username] || {}; }
 
-  // Level
   var lv = getLv(gd.xp || 0);
   document.getElementById('vp-lvl').textContent = 'Level ' + lv.n + ' · ' + lv.name;
 
-  // Stats
   var totAns = gd.totAns || 0, totCor = gd.totCor || 0;
   var acc = totAns > 0 ? Math.round(totCor / totAns * 100) : 0;
   document.getElementById('vp-stats').innerHTML =
@@ -3169,18 +3541,12 @@ async function openPlayer(username){
     '<div class="prof-stat"><div class="ps-val">' + (gd.streak||0) + '</div><div class="ps-key">Streak</div></div>' +
     '<div class="prof-stat"><div class="ps-val">' + acc + '%</div><div class="ps-key">Acc</div></div>';
 
-  // Badges — swap CU/DB temporarily to evaluate badges for this user
   var sCU = CU, sDB = JSON.parse(JSON.stringify(DB));
-  CU = username;
-  if(!DB[CU]) DB[CU] = {};
-  Object.assign(DB[CU], gd);
+  CU = username; if(!DB[CU]) DB[CU] = {}; Object.assign(DB[CU], gd);
   var earned = ACHS.filter(function(a){ try{ return a.chk(); }catch(e){ return false; } });
   CU = sCU; DB = sDB;
 
-  if(!ACHS.length){
-    document.getElementById('vp-badges').innerHTML = '<div style="color:var(--muted2);font-size:13px">No badges</div>';
-    return;
-  }
+  if(!ACHS.length){ document.getElementById('vp-badges').innerHTML = '<div style="color:var(--muted2);font-size:13px">No badges</div>'; return; }
   var bhtml = '';
   ACHS.forEach(function(a){
     var won = earned.find(function(e){ return e.id === a.id; });
@@ -3192,7 +3558,146 @@ async function openPlayer(username){
   document.getElementById('vp-badges').innerHTML = bhtml;
 }
 
-// ── SEND INVITE ──
+// ════════════════════════════════════════════
+// MULTIPLAYER GAME (Simulated)
+// ════════════════════════════════════════════
+var _multiOpponent = '';
+var _multiMyScore = 0;
+var _multiOppScore = 0;
+var _multiQs = [];
+var _multiQIdx = 0;
+var _multiTimer = 15;
+var _multiTimerID = null;
+var _multiTotal = 10;
+
+function startMultiGame(opponent){
+  _multiOpponent = opponent || _curViewUser || 'Bot';
+  _multiMyScore = 0;
+  _multiOppScore = 0;
+  _multiQIdx = 0;
+  _multiQs = genMultiQuestions(_multiTotal);
+
+  document.getElementById('multi-vs-label').textContent = 'vs ' + _multiOpponent;
+  document.getElementById('multi-my-name').textContent = CU || 'You';
+  document.getElementById('multi-opp-name').textContent = _multiOpponent;
+  document.getElementById('multi-my-score').textContent = '0';
+  document.getElementById('multi-opp-score').textContent = '0';
+  document.getElementById('multi-qtot').textContent = _multiTotal;
+  document.getElementById('multi-prog').style.width = '0%';
+
+  goPage('multi-scr');
+  showMultiQuestion();
+}
+
+function genMultiQuestions(n){
+  var qs = [];
+  for(var i = 0; i < n; i++){
+    var ops = ['+','-','x'];
+    var op = ops[Math.floor(Math.random()*ops.length)];
+    var a = Math.floor(Math.random()*20)+1;
+    var b = Math.floor(Math.random()*20)+1;
+    var ans;
+    if(op==='+') ans = a+b;
+    else if(op==='-'){ if(a<b){var t=a;a=b;b=t;} ans=a-b; }
+    else ans = a*b;
+    // Generate 3 wrong answers
+    var wrongs = [];
+    while(wrongs.length < 3){
+      var w = ans + (Math.floor(Math.random()*10)-5);
+      if(w !== ans && w > 0 && !wrongs.includes(w)) wrongs.push(w);
+    }
+    var opts = [ans].concat(wrongs).sort(function(){ return Math.random()-0.5; });
+    qs.push({q: a + ' ' + op + ' ' + b + ' = ?', ans: ans, opts: opts});
+  }
+  return qs;
+}
+
+function showMultiQuestion(){
+  if(_multiQIdx >= _multiTotal){ endMultiGame(); return; }
+  var q = _multiQs[_multiQIdx];
+  document.getElementById('multi-question').textContent = q.q;
+  document.getElementById('multi-qnum').textContent = _multiQIdx + 1;
+  document.getElementById('multi-prog').style.width = ((_multiQIdx/_multiTotal)*100) + '%';
+
+  var opts = document.getElementById('multi-options');
+  opts.innerHTML = '';
+  q.opts.forEach(function(opt){
+    var btn = document.createElement('button');
+    btn.textContent = opt;
+    btn.style.cssText = 'background:var(--s2);border:1.5px solid var(--bdr2);border-radius:14px;padding:16px;font-size:20px;font-weight:900;color:var(--fg);cursor:pointer;font-family:var(--mono);transition:all .15s';
+    btn.onmousedown = function(){ btn.style.transform='scale(.96)'; };
+    btn.onclick = function(){ answerMulti(opt, q.ans, btn, opts); };
+    opts.appendChild(btn);
+  });
+
+  // Timer
+  clearInterval(_multiTimerID);
+  _multiTimer = 15;
+  document.getElementById('multi-timer').textContent = _multiTimer;
+  _multiTimerID = setInterval(function(){
+    _multiTimer--;
+    document.getElementById('multi-timer').textContent = _multiTimer;
+    // Opponent answers randomly between 5-12s
+    if(_multiTimer === Math.floor(Math.random()*7)+5){
+      var oppCorrect = Math.random() > 0.35; // 65% chance opponent is correct
+      if(oppCorrect){ _multiOppScore += 10; document.getElementById('multi-opp-score').textContent = _multiOppScore; }
+    }
+    if(_multiTimer <= 0){
+      clearInterval(_multiTimerID);
+      _multiQIdx++;
+      setTimeout(showMultiQuestion, 500);
+    }
+  }, 1000);
+}
+
+function answerMulti(chosen, correct, btn, opts){
+  clearInterval(_multiTimerID);
+  // Disable all buttons
+  Array.from(opts.children).forEach(function(b){
+    b.onclick = null;
+    b.style.opacity = '0.5';
+    if(parseInt(b.textContent) === correct) b.style.borderColor = '#00f5a0';
+  });
+
+  if(chosen === correct){
+    _multiMyScore += 10 + _multiTimer; // bonus for speed
+    btn.style.borderColor = '#00f5a0';
+    btn.style.background = 'rgba(0,245,160,.12)';
+    document.getElementById('multi-my-score').textContent = _multiMyScore;
+    showToast('+' + (10+_multiTimer) + ' pts!');
+  } else {
+    btn.style.borderColor = 'var(--red,#f43f5e)';
+    btn.style.background = 'rgba(244,63,94,.1)';
+    showToast('Wrong! -0 pts');
+  }
+
+  _multiQIdx++;
+  setTimeout(showMultiQuestion, 800);
+}
+
+function endMultiGame(){
+  clearInterval(_multiTimerID);
+  document.getElementById('mr-my-name').textContent = CU || 'You';
+  document.getElementById('mr-opp-name').textContent = _multiOpponent;
+  document.getElementById('mr-my-score').textContent = _multiMyScore;
+  document.getElementById('mr-opp-score').textContent = _multiOppScore;
+
+  var won = _multiMyScore > _multiOppScore;
+  var draw = _multiMyScore === _multiOppScore;
+  document.getElementById('multi-result-emoji').textContent = won ? '🏆' : draw ? '🤝' : '😭';
+  document.getElementById('multi-result-title').textContent = won ? 'You Won!' : draw ? "It's a Draw!" : _multiOpponent + ' Won!';
+  document.getElementById('multi-result-sub').textContent = 'Your score: ' + _multiMyScore + ' pts  |  ' + _multiOpponent + ': ' + _multiOppScore + ' pts';
+
+  goPage('multi-result-scr');
+  showToast(won ? 'Great game! 🏆' : draw ? 'Close game! 🤝' : 'Better luck next time!');
+}
+
+function exitMulti(){
+  clearInterval(_multiTimerID);
+  goPage('search-scr');
+}
+
+// // ── SEND INVITE ──
 async function sendInvite(){
   if(!CU){ showToast('Sign in first'); return; }
   if(_curViewUser === CU){ showToast('Cannot invite yourself!'); return; }
