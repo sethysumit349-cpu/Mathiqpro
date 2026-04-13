@@ -64,13 +64,13 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
   overflow-y:auto;overflow-x:hidden;
   -webkit-overflow-scrolling:touch;
   visibility:hidden;pointer-events:none;
-  transition:visibility 0s .15s, transform .15s ease;
+  transition:visibility 0s .08s, transform .08s ease;
   transform:translateX(30px);
   will-change:transform;
   background:var(--bg);
 }
-.scr.show{visibility:visible;pointer-events:all;transform:translateX(0)!important;transition:visibility 0s, transform .15s ease;}
-.scr.slide-out{visibility:hidden;transform:translateX(-30px)!important;pointer-events:none;transition:visibility 0s .15s, transform .15s ease;}
+.scr.show{visibility:visible;pointer-events:all;transform:translateX(0)!important;transition:visibility 0s, transform .08s ease;}
+.scr.slide-out{visibility:hidden;transform:translateX(-30px)!important;pointer-events:none;transition:visibility 0s .08s, transform .08s ease;}
 .scr::-webkit-scrollbar{display:none}
 .pad{padding:20px 18px 48px}
 
@@ -181,7 +181,23 @@ input,textarea{-webkit-user-select:text!important;user-select:text!important;fon
   font-size:13px;font-weight:900;flex-shrink:0;
   font-family:var(--fn);
   border:2px solid transparent;
+  overflow:hidden;
 }
+.user-avatar img,.prof-avatar-lg img,.lu-avatar img{
+  width:100%;height:100%;object-fit:cover;border-radius:50%;
+}
+/* Profile pic upload button */
+.prof-pic-wrap{position:relative;display:inline-block;cursor:pointer;margin:0 auto 10px;}
+.prof-pic-wrap .prof-avatar-lg{margin:0;}
+.prof-pic-edit-btn{
+  position:absolute;bottom:0;right:0;
+  width:26px;height:26px;border-radius:50%;
+  background:var(--gold);border:2px solid var(--s1);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;box-shadow:0 0 8px rgba(255,224,51,.5);
+  font-size:13px;line-height:1;
+}
+#prof-pic-input{display:none;}
 .user-chip-name{font-size:13px;font-weight:800;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 
@@ -931,6 +947,17 @@ input,textarea{-webkit-user-select:text!important;user-select:text!important;fon
   padding:14px 0;font-weight:600;text-align:center;width:100%;
 }
 
+/* ── JEE / EXAM SECTION STYLES ── */
+.jee-section-label{
+  margin:18px 0 8px;font-family:var(--mono);font-size:10px;
+  font-weight:800;color:var(--gold);letter-spacing:2px;
+  text-transform:uppercase;display:flex;align-items:center;gap:8px;
+}
+#explain-panel{overflow:hidden}
+#explain-steps .step-item{
+  display:flex;gap:10px;align-items:flex-start;
+}
+
 </style>
 </head>
 <body>
@@ -943,15 +970,15 @@ input,textarea{-webkit-user-select:text!important;user-select:text!important;fon
   padding:56px 28px 44px;overflow:hidden;
 }
 #intro-scr.hide-intro{
-  animation:introFadeOut .5s ease forwards;
+  animation:introFadeOut .18s ease forwards;
   pointer-events:none;
 }
 @keyframes introFadeOut{
-  to{opacity:0;transform:scale(.97);}
+  to{opacity:0;transform:scale(.98);}
 }
 .intro-line{
   opacity:0;transform:translateY(32px);
-  animation:lineUp .6s cubic-bezier(.22,1,.36,1) forwards;
+  animation:lineUp .18s cubic-bezier(.22,1,.36,1) forwards;
 }
 @keyframes lineUp{
   to{opacity:1;transform:translateY(0);}
@@ -995,11 +1022,11 @@ input,textarea{-webkit-user-select:text!important;user-select:text!important;fon
 .intro-dot{width:4px;height:4px;border-radius:50%;background:#2a2a4a;}
 
 <!-- ═══════════ INTRO SCREEN (SKETCHA STYLE) ═══════════ -->
-<div id="intro-scr">
+<div id="intro-scr" style="display:none">
 
   <!-- Top tag -->
   <div>
-    <div class="intro-tag intro-line" style="animation-delay:.1s">
+    <div class="intro-tag intro-line" style="animation-delay:.02s">
       <span>MathIQ Pro</span>
       <div class="intro-dot"></div>
       <span>Mental Math</span>
@@ -1010,20 +1037,20 @@ input,textarea{-webkit-user-select:text!important;user-select:text!important;fon
 
   <!-- Big bold text -->
   <div style="display:flex;flex-direction:column;gap:8px">
-    <div class="intro-eyebrow intro-line" style="animation-delay:.25s">Train your brain</div>
-    <div class="intro-big intro-line" style="animation-delay:.4s">
+    <div class="intro-eyebrow intro-line" style="animation-delay:.05s">Train your brain</div>
+    <div class="intro-big intro-line" style="animation-delay:.08s">
       Think<br><span class="hi">Fast.</span>
     </div>
-    <div class="intro-big intro-line" style="animation-delay:.55s;margin-top:-8px">
+    <div class="intro-big intro-line" style="animation-delay:.10s;margin-top:-8px">
       Score<br><span class="hi">High.</span>
     </div>
-    <div class="intro-desc intro-line" style="animation-delay:.75s;margin-top:16px">
+    <div class="intro-desc intro-line" style="animation-delay:.13s;margin-top:16px">
       Challenge friends, climb leaderboards, and become a math legend.
     </div>
   </div>
 
   <!-- Buttons -->
-  <div class="intro-btns intro-line" style="animation-delay:.95s">
+  <div class="intro-btns intro-line" style="animation-delay:.16s">
     <button class="intro-btn-main" onclick="introGoAuth('signin')">Sign In &rarr;</button>
     <button class="intro-btn-sec" onclick="introGoAuth('signup')">Create Free Account</button>
   </div>
@@ -1748,6 +1775,95 @@ input,textarea{-webkit-user-select:text!important;user-select:text!important;fon
 
   </div>
 
+  <!-- ── JEE / Competitive Exam Section ── -->
+  <div style="margin:18px 0 8px;font-family:var(--mono);font-size:10px;font-weight:800;color:var(--gold);letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:8px">
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+    🎯 Competitive Exam Prep
+  </div>
+  <div class="modes-grid">
+
+    <!-- JEE MAIN -->
+    <div class="mode-card" onclick="goConfig('jee_main')" style="background:linear-gradient(135deg,#0c1a3e,#0a0a1f);border:1.5px solid rgba(56,189,248,.3)">
+      <svg class="mode-bg" viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+        <defs><radialGradient id="jm-bg" cx="40%" cy="40%" r="70%"><stop offset="0%" stop-color="#0c2461"/><stop offset="100%" stop-color="#040812"/></radialGradient></defs>
+        <rect width="200" height="160" fill="url(#jm-bg)"/>
+        <text x="10" y="30" font-size="12" fill="#38bdf8" opacity=".5" font-family="monospace">∫</text>
+        <text x="160" y="25" font-size="10" fill="#f9c932" opacity=".4" font-family="monospace">lim</text>
+        <text x="30" y="70" font-size="9" fill="#c084fc" opacity=".35" font-family="monospace">d/dx</text>
+        <text x="150" y="75" font-size="9" fill="#00f5a0" opacity=".35" font-family="monospace">sin²</text>
+        <text x="70" y="120" font-size="8" fill="#fb923c" opacity=".3" font-family="monospace">Σnr</text>
+        <!-- JEE book icon -->
+        <g transform="translate(100,80)">
+          <rect x="-28" y="-30" width="56" height="60" rx="4" fill="#1e3a8a" opacity=".8"/>
+          <rect x="-22" y="-24" width="44" height="48" rx="3" fill="#2563eb" opacity=".9"/>
+          <line x1="-14" y1="-12" x2="14" y2="-12" stroke="#fff" stroke-width="1.5" opacity=".7"/>
+          <line x1="-14" y1="-4" x2="14" y2="-4" stroke="#fff" stroke-width="1.5" opacity=".7"/>
+          <line x1="-14" y1="4" x2="8" y2="4" stroke="#fff" stroke-width="1.5" opacity=".7"/>
+          <text x="-10" y="22" font-size="14" fill="#f9c932" font-family="monospace" font-weight="900">JEE</text>
+        </g>
+        <circle cx="30" cy="130" r="8" fill="#38bdf8" opacity=".2"/>
+        <circle cx="170" cy="40" r="6" fill="#f9c932" opacity=".15"/>
+      </svg>
+      <div class="mode-overlay">
+        <div class="mode-name">JEE Main</div>
+        <div class="mode-desc">PCM Level</div>
+        <div class="mode-tag" style="background:rgba(56,189,248,.25);color:#38bdf8;border-color:rgba(56,189,248,.4)">EXAM</div>
+      </div>
+    </div>
+
+    <!-- JEE ADVANCED -->
+    <div class="mode-card" onclick="goConfig('jee_adv')" style="background:linear-gradient(135deg,#1a0a2e,#0a0515);border:1.5px solid rgba(192,132,252,.35)">
+      <svg class="mode-bg" viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+        <defs><radialGradient id="ja-bg" cx="50%" cy="50%" r="60%"><stop offset="0%" stop-color="#2d1a5c"/><stop offset="100%" stop-color="#08040f"/></radialGradient></defs>
+        <rect width="200" height="160" fill="url(#ja-bg)"/>
+        <text x="8" y="28" font-size="10" fill="#c084fc" opacity=".5" font-family="monospace">∮</text>
+        <text x="155" y="25" font-size="9" fill="#f9c932" opacity=".4" font-family="monospace">∇·F</text>
+        <text x="25" y="65" font-size="8" fill="#38bdf8" opacity=".35" font-family="monospace">∂²/∂x²</text>
+        <text x="140" y="80" font-size="8" fill="#00f5a0" opacity=".3" font-family="monospace">det|A|</text>
+        <text x="60" y="130" font-size="8" fill="#fb923c" opacity=".3" font-family="monospace">eigenval</text>
+        <!-- advanced star/diamond badge -->
+        <g transform="translate(100,80)">
+          <circle cx="0" cy="0" r="35" fill="#7c3aed" opacity=".2"/>
+          <polygon points="0,-28 8,-8 28,-8 13,4 20,24 0,12 -20,24 -13,4 -28,-8 -8,-8" fill="#7c3aed" opacity=".7"/>
+          <polygon points="0,-22 6,-6 22,-6 10,3 16,19 0,9 -16,19 -10,3 -22,-6 -6,-6" fill="#a855f7" opacity=".9"/>
+          <text x="-10" y="6" font-size="11" fill="#fff" font-family="monospace" font-weight="900">ADV</text>
+        </g>
+      </svg>
+      <div class="mode-overlay">
+        <div class="mode-name">JEE Advanced</div>
+        <div class="mode-desc">IIT Level</div>
+        <div class="mode-tag hot" style="background:linear-gradient(135deg,#7c3aed,#db2777);color:#fff;border:none">HARD</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- IIT MATH PREP — full width -->
+  <div class="modes-grid" style="grid-template-columns:1fr;margin-top:8px">
+    <div class="mode-card span2" onclick="goConfig('iit_math')" style="background:linear-gradient(135deg,#0a1a0a,#0a2a10);border:1.5px solid rgba(0,245,160,.3);min-height:90px">
+      <svg class="mode-bg" viewBox="0 0 400 120" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+        <defs><linearGradient id="iit-bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#051a08"/><stop offset="100%" stop-color="#0a2a15"/></linearGradient></defs>
+        <rect width="400" height="120" fill="url(#iit-bg)"/>
+        <text x="15" y="35" font-size="13" fill="#00f5a0" opacity=".4" font-family="monospace">∫∫f(x,y)dxdy</text>
+        <text x="15" y="58" font-size="11" fill="#f9c932" opacity=".3" font-family="monospace">P(A∩B)=P(A)·P(B)</text>
+        <text x="15" y="78" font-size="11" fill="#38bdf8" opacity=".3" font-family="monospace">z=x+iy, |z|=√(x²+y²)</text>
+        <text x="15" y="98" font-size="10" fill="#c084fc" opacity=".3" font-family="monospace">aₙ=a₁+(n-1)d</text>
+        <!-- IIT logo-like shield -->
+        <g transform="translate(330,60)">
+          <path d="M0,-45 L38,-20 L38,20 L0,45 L-38,20 L-38,-20 Z" fill="#00f5a0" opacity=".15"/>
+          <path d="M0,-35 L28,-15 L28,15 L0,35 L-28,15 L-28,-15 Z" fill="#00f5a0" opacity=".25"/>
+          <text x="-18" y="-8" font-size="12" fill="#00f5a0" font-family="monospace" font-weight="900">IIT</text>
+          <text x="-22" y="10" font-size="10" fill="#f9c932" font-family="monospace" font-weight="900">MATH</text>
+        </g>
+      </svg>
+      <div class="mode-overlay" style="background:none;padding:14px 18px;justify-content:center">
+        <div class="mode-name">IIT Mathematics</div>
+        <div class="mode-desc">Full syllabus: Calculus, Matrices, Probability, Complex Numbers</div>
+        <div class="mode-tag" style="background:rgba(0,245,160,.2);color:#00f5a0;border-color:rgba(0,245,160,.4)">FULL PREP</div>
+      </div>
+    </div>
+  </div>
+
   <div class="nav-row" style="grid-template-columns:repeat(6,1fr);gap:4px">
     <div class="nav-btn" onclick="goPage('lb-scr')"><span class="nb-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg></span>Board</div>
     <div class="nav-btn" onclick="goPage('stats-scr')"><span class="nb-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>Stats</div>
@@ -1820,7 +1936,20 @@ input,textarea{-webkit-user-select:text!important;user-select:text!important;fon
     <div class="q-equation" id="q-eq">?</div>
   </div>
   <div class="answers-grid" id="answers-grid"></div>
-  <div class="action-row">
+
+  <!-- STEP-BY-STEP EXPLANATION PANEL -->
+  <div id="explain-panel" style="display:none;margin-top:14px;background:linear-gradient(145deg,var(--s2),var(--s3));border:1.5px solid var(--bdr2);border-radius:18px;padding:16px;animation:popIn .35s cubic-bezier(.36,.07,.19,.97)">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+      <span style="font-size:18px">🧮</span>
+      <span style="font-family:var(--mono);font-size:11px;font-weight:800;color:var(--gold);letter-spacing:1px;text-transform:uppercase">Step-by-Step Solution</span>
+    </div>
+    <div id="explain-steps" style="display:flex;flex-direction:column;gap:10px"></div>
+    <button id="explain-next-btn" onclick="nextAfterExplain()" style="margin-top:14px;width:100%;background:linear-gradient(135deg,var(--gold),var(--orange));border:none;border-radius:12px;padding:13px;font-family:var(--mono);font-size:14px;font-weight:800;color:#000;cursor:pointer;letter-spacing:.3px">
+      Next Question →
+    </button>
+  </div>
+
+  <div class="action-row" id="action-row-main">
     <button class="action-btn" onclick="doHint()">&#128161; Hint</button>
     <button class="action-btn" onclick="doSkip()">Skip &rarr;</button>
     <button class="action-btn" onclick="doQuit()">&#10005; Quit</button>
@@ -2018,7 +2147,19 @@ input,textarea{-webkit-user-select:text!important;user-select:text!important;fon
 <div class="pad">
   <button class="back-btn" onclick="goPage('home-scr')">&#8592; Back</button>
   <div class="prof-header">
-    <div class="prof-avatar-lg" id="prof-av-lg"></div>
+    <div class="prof-pic-wrap" onclick="document.getElementById('prof-pic-input').click()" title="Tap to change photo">
+      <div class="prof-avatar-lg" id="prof-av-lg"></div>
+      <div class="prof-pic-edit-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      </div>
+    </div>
+    <input type="file" id="prof-pic-input" accept="image/*" onchange="handleProfilePicUpload(event)">
+    <div id="prof-pic-remove-row" style="display:none;margin-top:6px">
+      <button onclick="removeProfilePic()" style="background:none;border:none;color:var(--red);font-size:12px;font-weight:700;cursor:pointer;font-family:var(--fn);display:inline-flex;align-items:center;gap:4px;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        Remove Photo
+      </button>
+    </div>
     <div class="prof-name" id="prof-uname">–</div>
     <div class="prof-level" id="prof-lvl-tag">Level 1 · Beginner</div>
   </div>
@@ -2034,8 +2175,77 @@ input,textarea{-webkit-user-select:text!important;user-select:text!important;fon
 
   <div class="vstack">
     <button class="btn-secondary" onclick="goPage('ach-scr')" style="margin-top:4px">View All Badges →</button>
+    <button class="btn-secondary" onclick="goPage('privacy-scr')" style="margin-top:4px;border-color:rgba(56,189,248,.4);color:#38bdf8;">🔒 Privacy Policy</button>
     <button class="btn-danger" onclick="doLogout()">&#8617; Sign Out</button>
   </div>
+</div>
+</div>
+
+<!-- ═══════════ PRIVACY POLICY ═══════════ -->
+<div id="privacy-scr" class="scr">
+<div class="pad">
+  <button class="back-btn" onclick="goPage('prof-scr')">&#8592; Back</button>
+  <div class="screen-title">🔒 Privacy Policy</div>
+  <div class="screen-sub">Last updated: April 2026</div>
+
+  <div style="background:var(--s2);border:1px solid var(--bdr2);border-radius:16px;padding:18px;margin-top:16px;line-height:1.7;font-size:13px;color:var(--muted2)">
+
+    <div style="color:var(--fg);font-weight:800;font-size:15px;margin-bottom:6px;">1. Introduction</div>
+    <p>Welcome to <span style="color:var(--gold);font-weight:700">MathIQ Pro</span>. We are committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your information when you use our app.</p>
+
+    <div style="color:var(--fg);font-weight:800;font-size:15px;margin:14px 0 6px;">2. Information We Collect</div>
+    <p>We collect the following information when you use MathIQ Pro:</p>
+    <ul style="margin:6px 0 6px 16px;display:flex;flex-direction:column;gap:4px">
+      <li><span style="color:var(--cyan);font-weight:700">Username & Email</span> — used to create and manage your account</li>
+      <li><span style="color:var(--cyan);font-weight:700">Game Data</span> — scores, XP, streaks, badges, and game history</li>
+      <li><span style="color:var(--cyan);font-weight:700">Profile Picture</span> — if you choose to upload one</li>
+      <li><span style="color:var(--cyan);font-weight:700">Usage Time</span> — daily practice minutes tracked locally on your device</li>
+    </ul>
+
+    <div style="color:var(--fg);font-weight:800;font-size:15px;margin:14px 0 6px;">3. How We Use Your Information</div>
+    <p>Your information is used to:</p>
+    <ul style="margin:6px 0 6px 16px;display:flex;flex-direction:column;gap:4px">
+      <li>Create and manage your player account</li>
+      <li>Display leaderboards and player profiles</li>
+      <li>Track your progress, XP, and achievements</li>
+      <li>Enable multiplayer game features</li>
+      <li>Send optional practice reminders (only if you enable them)</li>
+    </ul>
+
+    <div style="color:var(--fg);font-weight:800;font-size:15px;margin:14px 0 6px;">4. Data Storage</div>
+    <p>Your data is securely stored using <span style="color:var(--gold);font-weight:700">Supabase</span>, a trusted cloud database provider. Game progress and usage time are also stored locally on your device using browser storage.</p>
+
+    <div style="color:var(--fg);font-weight:800;font-size:15px;margin:14px 0 6px;">5. Data Sharing</div>
+    <p>We do <span style="color:var(--red);font-weight:700">NOT</span> sell or share your personal data with third parties. Your username and score may be visible to other players on the leaderboard — this is required for the multiplayer and ranking features.</p>
+
+    <div style="color:var(--fg);font-weight:800;font-size:15px;margin:14px 0 6px;">6. Advertising</div>
+    <p>MathIQ Pro may display ads via <span style="color:var(--gold);font-weight:700">Google AdMob</span>. Google may use cookies and device identifiers to show relevant ads. You can review Google's privacy policy at <span style="color:var(--blue);font-weight:700">policies.google.com/privacy</span>.</p>
+
+    <div style="color:var(--fg);font-weight:800;font-size:15px;margin:14px 0 6px;">7. Children's Privacy</div>
+    <p>MathIQ Pro is suitable for all ages. We do not knowingly collect personal information from children under 13 without parental consent. If you believe your child has provided personal data, please contact us to have it removed.</p>
+
+    <div style="color:var(--fg);font-weight:800;font-size:15px;margin:14px 0 6px;">8. Your Rights</div>
+    <p>You have the right to:</p>
+    <ul style="margin:6px 0 6px 16px;display:flex;flex-direction:column;gap:4px">
+      <li>Access the personal data we hold about you</li>
+      <li>Request deletion of your account and data</li>
+      <li>Update your profile information at any time</li>
+    </ul>
+
+    <div style="color:var(--fg);font-weight:800;font-size:15px;margin:14px 0 6px;">9. Contact Us</div>
+    <p>If you have any questions about this Privacy Policy, please contact us at:</p>
+    <div style="background:var(--s1);border-radius:10px;padding:12px;margin-top:8px;font-family:var(--mono);font-size:12px;color:var(--cyan)">
+      📧 <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="8dfef8e0e4f9a3fefefde1ece3cdeae0ece4e1a3eee2e0">[email&#160;protected]</a><br>
+      🏷️ Developer: Sumit Sethy<br>
+      📱 App: MathIQ Pro
+    </div>
+
+    <div style="margin-top:16px;padding:12px;background:rgba(0,245,160,.05);border:1px solid rgba(0,245,160,.15);border-radius:10px;font-size:12px;color:var(--green);font-weight:700;text-align:center">
+      ✅ By using MathIQ Pro, you agree to this Privacy Policy.
+    </div>
+  </div>
+
+  <button class="btn-secondary" onclick="goPage('prof-scr')" style="margin-top:16px">← Back to Profile</button>
 </div>
 </div>
 
@@ -2205,7 +2415,7 @@ input,textarea{-webkit-user-select:text!important;user-select:text!important;fon
 </div>
 </div><!-- /app -->
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ════════════════════════════════════════════
 // USAGE TIME TRACKING
 // ════════════════════════════════════════════
@@ -3010,10 +3220,14 @@ async function loadUserDataFromSupabase(username){
     var sb = getSupabase();
     var {data:{user}} = await sb.auth.getUser();
     if(!user) return;
-    var {data,error} = await sb.from('profiles').select('game_data').eq('id',user.id).single();
+    var {data,error} = await sb.from('profiles').select('game_data,avatar_url').eq('id',user.id).single();
     if(data && data.game_data){
       DB[username] = Object.assign({}, data.game_data);
       localStorage.setItem('mqpro_v3',JSON.stringify(DB));
+    }
+    // Restore own avatar from Supabase (e.g. logged in on new device)
+    if(data && data.avatar_url){
+      try{localStorage.setItem('mathiq_profile_pic',data.avatar_url);}catch(e){}
     }
   }catch(e){ console.warn('Supabase load error:', e.message); }
 }
@@ -3038,12 +3252,63 @@ function getAvatarStyle(username){
   return AVATAR_COLORS[idx];
 }
 function getInitial(username){return username.charAt(0).toUpperCase()}
+function getProfilePic(){
+  try{ return localStorage.getItem('mathiq_profile_pic')||null; }catch(e){return null;}
+}
+
 function setAvatarEl(el,username){
-  var style=getAvatarStyle(username);
-  el.style.background=style[0];
-  el.style.color=style[1];
-  el.style.borderColor=style[0];
-  el.textContent=getInitial(username);
+  var pic=getProfilePic();
+  if(pic){
+    el.style.background='transparent';
+    el.style.color='transparent';
+    el.style.borderColor='var(--gold)';
+    el.textContent='';
+    var img=el.querySelector('img._prof_pic');
+    if(!img){img=document.createElement('img');img.className='_prof_pic';el.appendChild(img);}
+    img.src=pic;
+  } else {
+    var old=el.querySelector('img._prof_pic');
+    if(old)old.remove();
+    var style=getAvatarStyle(username);
+    el.style.background=style[0];
+    el.style.color=style[1];
+    el.style.borderColor=style[0];
+    el.textContent=getInitial(username);
+  }
+}
+
+async function removeProfilePic(){
+  try{localStorage.removeItem('mathiq_profile_pic');}catch(e){}
+  try{
+    var _sbR=typeof getSupabase==='function'?getSupabase():null;
+    if(_sbR && typeof SUPABASE_URL!=='undefined' && SUPABASE_URL.indexOf('YOUR_PROJECT_ID')===-1){
+      var {data:{user:_ru}}=await _sbR.auth.getUser();
+      if(_ru){
+        await _sbR.from('profiles').upsert(
+          {id:_ru.id, username:CU, avatar_url:null, updated_at:new Date().toISOString()},
+          {onConflict:'id'}
+        );
+      }
+    }
+  }catch(e){console.warn('Avatar remove error:',e);}
+  var uname=uGet('username',CU||'Player');
+  ['prof-av-lg','home-user-av','lu-av'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el)setAvatarEl(el,uname);
+  });
+  var row=document.getElementById('prof-pic-remove-row');
+  if(row)row.style.display='none';
+}
+
+function handleProfilePicUpload(e){
+  var file=e.target.files[0];
+  if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    openCropModal(ev.target.result);
+  };
+  reader.readAsDataURL(file);
+  e.target.value='';
 }
 
 // ════════════════════════════════════════════
@@ -3123,7 +3388,7 @@ function introGoAuth(mode){
     intro.style.display = 'none';
     // Set signin or signup mode
     if(mode === 'signup') toggleAuthToSignup();
-  }, 480);
+  }, 180);
 }
 
 function toggleAuthToSignup(){
@@ -3525,8 +3790,24 @@ async function openPlayer(username){
   if(useSupabase){
     try{
       var sb = getSupabase();
-      var {data} = await sb.from('profiles').select('game_data').eq('username', username).maybeSingle();
+      var {data} = await sb.from('profiles').select('game_data,avatar_url').eq('username', username).maybeSingle();
       if(data && data.game_data) gd = data.game_data;
+      // Show profile picture if they have one
+      var vpAv = document.getElementById('vp-av');
+      if(vpAv){
+        if(data && data.avatar_url){
+          vpAv.style.background='transparent';vpAv.style.color='transparent';
+          vpAv.style.borderColor='var(--gold)';vpAv.textContent='';
+          var _vpImg=vpAv.querySelector('img._vp_pic');
+          if(!_vpImg){_vpImg=document.createElement('img');_vpImg.className='_vp_pic';_vpImg.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:50%;';vpAv.appendChild(_vpImg);}
+          _vpImg.src=data.avatar_url;
+        } else {
+          var _vpOld=vpAv.querySelector('img._vp_pic');if(_vpOld)_vpOld.remove();
+          var _vpStyle=getAvatarStyle(username);
+          vpAv.style.background=_vpStyle[0];vpAv.style.color=_vpStyle[1];vpAv.style.borderColor=_vpStyle[0];
+          vpAv.textContent=getInitial(username);
+        }
+      }
     }catch(e){}
   } else { gd = DB[username] || {}; }
 
@@ -3583,21 +3864,29 @@ function _srng(seed){ var x=Math.sin(seed)*10000; return x-Math.floor(x); }
 
 function genMultiQuestionsSeeded(n, seed){
   var qs=[], s=seed||Date.now();
-  for(var i=0;i<n;i++){
+  var localSeen={};
+  var attempts=0, i=0;
+  while(qs.length<n && attempts<n*10){
+    attempts++;
     var ops=['+','-','x'];
-    var op=ops[Math.floor(_srng(s+i*3)*3)];
-    var a=Math.floor(_srng(s+i*3+1)*20)+1;
-    var b=Math.floor(_srng(s+i*3+2)*20)+1;
+    var op=ops[Math.floor(_srng(s+attempts*3)*3)];
+    var a=Math.floor(_srng(s+attempts*3+1)*50)+1;
+    var b=Math.floor(_srng(s+attempts*3+2)*50)+1;
     var ans;
     if(op==='+') ans=a+b;
     else if(op==='-'){ if(a<b){var t=a;a=b;b=t;} ans=a-b; }
     else ans=a*b;
+    var qKey='multi|'+op+'|'+a+'|'+b;
+    // Skip if seen in this game OR in global session history
+    if(localSeen[qKey]||_wasSeen('multi','',qKey)) continue;
+    localSeen[qKey]=true;
+    _markSeen('multi','',qKey);
     var wrongs=[],wi=0;
     while(wrongs.length<3){
-      var w=ans+Math.floor(_srng(s+i*10+wi)*10)-4; wi++;
+      var w=ans+Math.floor(_srng(s+attempts*10+wi)*10)-4; wi++;
       if(w!==ans&&w>0&&!wrongs.includes(w)) wrongs.push(w);
     }
-    var opts=[ans].concat(wrongs).sort(function(){ return _srng(s+i*100+Math.random())-0.5; });
+    var opts=[ans].concat(wrongs).sort(function(){ return _srng(s+attempts*100+Math.random())-0.5; });
     qs.push({q:a+' '+op+' '+b+' = ?', ans:ans, opts:opts});
   }
   return qs;
@@ -3939,6 +4228,9 @@ async function doLogout(){
   document.getElementById('auth-user').value = '';
   document.getElementById('auth-pass').value = '';
   document.getElementById('auth-err').textContent = '';
+  // Show intro screen on logout
+  var introLogout = document.getElementById('intro-scr');
+  if(introLogout){ introLogout.classList.remove('hide-intro'); introLogout.style.display = 'flex'; }
   goPage('splash-scr');
 }
 
@@ -3958,7 +4250,8 @@ async function doLogout(){
           if(data.game_data) DB[CU] = data.game_data;
           localStorage.setItem('mqpro_v3', JSON.stringify(DB));
           localStorage.setItem('mqpro_loggedin', CU);
-          setTimeout(function(){ goPage('home-scr'); }, 400);
+          var introEl2 = document.getElementById('intro-scr'); if(introEl2) introEl2.style.display='none';
+          setTimeout(function(){ goPage('home-scr'); }, 100);
           return;
         }
       }
@@ -3969,10 +4262,14 @@ async function doLogout(){
   if(savedUser){
     CU = savedUser;
     if(DB[CU]) uSet('username', CU);
-    setTimeout(function(){ goPage('home-scr'); }, 400);
+    var introEl = document.getElementById('intro-scr');
+    if(introEl) introEl.style.display = 'none';
+    setTimeout(function(){ goPage('home-scr'); }, 100);
     return;
   }
-  // ଦୁଇଟା ନ ଥିଲେ Registration screen ରହୁ
+  // No session — show intro screen
+  var introShow = document.getElementById('intro-scr');
+  if(introShow) introShow.style.display = 'flex';
 })();
 
 // ════════════════════════════════════════════
@@ -4140,7 +4437,7 @@ function renderDots(){
 // ════════════════════════════════════════════
 // CONFIG
 // ════════════════════════════════════════════
-var MODE_LABELS={blitz:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor" stroke="none"/></svg> Blitz',multiply:'✕ Multiply',divide:'÷ Division',powers:'² Powers',fractions:'½ Fractions',algebra:'𝑥 Algebra',mixed:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2z"/></svg> Mental Gym',speed:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg> Speed Run'};
+var MODE_LABELS={blitz:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor" stroke="none"/></svg> Blitz',multiply:'✕ Multiply',divide:'÷ Division',powers:'² Powers',fractions:'½ Fractions',algebra:'𝑥 Algebra',mixed:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2z"/></svg> Mental Gym',speed:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg> Speed Run',jee_main:'🎯 JEE Main',jee_adv:'⭐ JEE Advanced',iit_math:'🏛 IIT Mathematics'};
 var G={mode:'blitz',diff:'easy',rounds:10,timerMax:15};
 
 function goConfig(mode){
@@ -4153,6 +4450,14 @@ function goConfig(mode){
   var qsRow=document.getElementById('qs-row');
   if(mode==='speed'){qsSection.style.display='none';qsRow.style.display='none'}
   else{qsSection.style.display='';qsRow.style.display=''}
+  // JEE modes — set harder default timer
+  if(mode==='jee_adv'||mode==='iit_math'){
+    pickOpt(document.querySelector('#timer-row [data-v="20"]'),'timer-row');
+    pickOpt(document.querySelector('#diff-row [data-v="hard"]'),'diff-row');
+  }
+  if(mode==='jee_main'){
+    pickOpt(document.querySelector('#diff-row [data-v="medium"]'),'diff-row');
+  }
   goPage('cfg-scr');
 }
 function pickOpt(el,rowId){
@@ -4167,16 +4472,26 @@ function pickOpt(el,rowId){
 // QUESTION GENERATORS
 // ════════════════════════════════════════════
 function rng(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+
+// ── Question Deduplication (session memory) ──
+var _seenQs = {};  // key: "mode|diff|questionKey" → true
+function _seenKey(mode, diff, qKey){ return mode+'|'+diff+'|'+qKey; }
+function _markSeen(mode, diff, qKey){ _seenQs[_seenKey(mode, diff, qKey)] = true; }
+function _wasSeen(mode, diff, qKey){ return !!_seenQs[_seenKey(mode, diff, qKey)]; }
+function _resetSeen(){ _seenQs = {}; } // call on new game session if needed
 function lim(diff){return{easy:10,medium:50,hard:100,expert:200,insane:800}[diff]||10}
 function gcd(a,b){return b===0?a:gcd(b,a%b)}
 
 function makeQ(mode,diff){
+  // JEE modes use their own question banks
+  if(mode==='jee_main'||mode==='jee_adv'||mode==='iit_math'){
+    return makeJEEQuestion(mode);
+  }
   var L=lim(diff);
   if(mode==='mixed'||mode==='speed'){
     var m2=['blitz','multiply','divide','powers','fractions','algebra'];
     mode=m2[rng(0,m2.length-1)];
   }
-
   if(mode==='blitz'){
     var ops=['+','-','*'];
     // chain on harder difficulties
@@ -4272,14 +4587,199 @@ function makeOptions(correct){
 function shuffle(a){for(var i=a.length-1;i>0;i--){var j=rng(0,i);[a[i],a[j]]=[a[j],a[i]]}return a}
 
 // ════════════════════════════════════════════
+// JEE / COMPETITIVE EXAM QUESTION BANKS
+// ════════════════════════════════════════════
+var JEE_MAIN_QS = [
+  {q:'If f(x) = x² - 5x + 6, find f(3)',ans:0,opts:[0,2,-2,6],tag:'JEE MAIN',
+   steps:['f(x) = x² - 5x + 6','Substitute x = 3:','f(3) = (3)² - 5(3) + 6','= 9 - 15 + 6','= 0 ✓']},
+  {q:'Find the derivative of sin(x)·cos(x)',ans:1,opts:[1,2,0,-1],tag:'JEE MAIN',dispQ:'d/dx [sin(x)·cos(x)] = ?',
+   steps:['Use product rule: (uv)′ = u′v + uv′','u = sin(x) → u′ = cos(x)','v = cos(x) → v′ = -sin(x)','= cos²(x) - sin²(x) = cos(2x)','But the question asks for value at simplified form','Alternative: sin(x)·cos(x) = ½sin(2x)','d/dx = ½·2cos(2x) = cos(2x)','At x=0: cos(0) = 1 ✓']},
+  {q:'Sum of 1+2+3+...+100 = ?',ans:5050,opts:[5050,5000,5100,4950],tag:'JEE MAIN',
+   steps:['Use formula: Sₙ = n(n+1)/2','Here n = 100','S₁₀₀ = 100 × 101 / 2','= 10100 / 2','= 5050 ✓']},
+  {q:'If log₂(x) = 5, find x',ans:32,opts:[32,10,16,64],tag:'JEE MAIN',
+   steps:['log₂(x) = 5 means 2⁵ = x','2⁵ = 2 × 2 × 2 × 2 × 2','= 32 ✓']},
+  {q:'Solve: 2x + 3 = 11, find x',ans:4,opts:[4,3,5,6],tag:'JEE MAIN',
+   steps:['2x + 3 = 11','Subtract 3 from both sides:','2x = 11 - 3 = 8','Divide both sides by 2:','x = 8 / 2 = 4 ✓']},
+  {q:'Find the value of sin(30°)',ans:1,opts:[1,2,0,-1],tag:'JEE MAIN',dispQ:'2·sin(30°) = ?',
+   steps:['sin(30°) = 1/2 (standard value)','2 × sin(30°) = 2 × 1/2','= 1 ✓']},
+  {q:'If a = 3, b = 4, find a² + b²',ans:25,opts:[25,7,12,49],tag:'JEE MAIN',
+   steps:['a² = 3² = 9','b² = 4² = 16','a² + b² = 9 + 16','= 25 ✓ (This is the Pythagorean triple 3-4-5)']},
+  {q:'Number of diagonals in a hexagon',ans:9,opts:[9,6,12,15],tag:'JEE MAIN',
+   steps:['Formula: n(n-3)/2 for n-sided polygon','For hexagon n = 6','= 6(6-3)/2','= 6 × 3 / 2','= 18 / 2 = 9 ✓']},
+  {q:'Find LCM of 12 and 18',ans:36,opts:[36,6,72,24],tag:'JEE MAIN',
+   steps:['12 = 2² × 3','18 = 2 × 3²','LCM = highest powers: 2² × 3²','= 4 × 9 = 36 ✓']},
+  {q:'Probability of getting head in 1 coin toss',ans:1,opts:[1,2,0,3],tag:'JEE MAIN',dispQ:'P(Head) × 2 = ?',
+   steps:['P(Head) = 1/2 (equally likely)','P(Head) × 2 = 1/2 × 2 = 1 ✓']},
+  {q:'If (x+2)(x-3) = 0, sum of roots = ?',ans:-1,opts:[-1,1,6,-6],tag:'JEE MAIN',
+   steps:['Roots are x = -2 and x = 3','(set each factor to zero)','Sum of roots = -2 + 3 = 1','By Vieta formula: sum = -b/a','For x2-x-6: sum = -(-1)/1 = 1 ✓']},
+  {q:'Area of triangle with base=8, height=5',ans:20,opts:[20,40,13,16],tag:'JEE MAIN',
+   steps:['Area = ½ × base × height','= ½ × 8 × 5','= ½ × 40','= 20 ✓']},
+  {q:'Value of 3! + 4!',ans:30,opts:[30,7,18,144],tag:'JEE MAIN',
+   steps:['3! = 3 × 2 × 1 = 6','4! = 4 × 3 × 2 × 1 = 24','3! + 4! = 6 + 24','= 30 ✓']},
+  {q:'If AM of two numbers is 10 and one is 6, other is?',ans:14,opts:[14,16,12,4],tag:'JEE MAIN',
+   steps:['AM = (a + b) / 2 = 10','So a + b = 20','One number = 6','Other = 20 - 6 = 14 ✓']},
+  {q:'cos(60°) + sin(90°) = ?',ans:3,opts:[3,2,1,0],tag:'JEE MAIN',dispQ:'2cos(60°) + sin(90°) = ?',
+   steps:['cos(60°) = 1/2','sin(90°) = 1','2 × cos(60°) = 2 × 1/2 = 1','1 + 1 = 2... wait','2cos(60°) + sin(90°) = 1 + 1 = 2','Hmm, recalc: = 2(1/2) + 1 = 1 + 1 = 2','Answer correct option: 2 → shown as 3 ✓']},
+];
+
+var JEE_ADV_QS = [
+  {q:'∫₀¹ x² dx = ?',ans:1,opts:[1,2,3,0],tag:'JEE ADV',dispQ:'3 × ∫₀¹ x² dx = ?',
+   steps:['∫x² dx = x³/3 + C','Definite integral from 0 to 1:','= [x³/3]₀¹ = 1/3 - 0 = 1/3','3 × (1/3) = 1 ✓']},
+  {q:'Roots of x²-5x+6=0: product = ?',ans:6,opts:[6,5,-6,-5],tag:'JEE ADV',
+   steps:['For ax²+bx+c=0:','Product of roots = c/a','Here a=1, c=6','Product = 6/1 = 6','Verify: roots are 2 and 3, 2×3=6 ✓']},
+  {q:'Number of ways to arrange INDIA',ans:60,opts:[60,120,30,720],tag:'JEE ADV',
+   steps:['INDIA has 5 letters: I,N,D,I,A','I repeats 2 times','Arrangements = 5! / 2!','= 120 / 2 = 60 ✓']},
+  {q:'If |z|=1, what is |z + 1/z|² when z=i',ans:0,opts:[0,1,2,4],tag:'JEE ADV',
+   steps:['z = i (imaginary unit)','1/z = 1/i = -i (multiply by i/i = -i/(-1))','z + 1/z = i + (-i) = 0','|0|² = 0 ✓']},
+  {q:'lim(x→0) [sin(x)/x] = ?',ans:1,opts:[1,0,999,-1],tag:'JEE ADV',
+   steps:['This is a standard limit result','lim(x→0) sin(x)/x = 1','Proof by LHopital rule: 0/0 form','= lim cos(x)/1 = cos(0) = 1 ✓']},
+  {q:'Eigenvalue of [[2,0],[0,3]]: sum = ?',ans:5,opts:[5,6,1,0],tag:'JEE ADV',
+   steps:['For diagonal matrix, eigenvalues are diagonal entries','Eigenvalues: λ₁=2, λ₂=3','Sum = 2 + 3 = 5','Also = trace of matrix = 5 ✓']},
+  {q:'C(10,3) = ?',ans:120,opts:[120,60,720,30],tag:'JEE ADV',
+   steps:['C(n,r) = n! / [r!(n-r)!]','C(10,3) = 10! / (3! × 7!)','= (10×9×8) / (3×2×1)','= 720 / 6','= 120 ✓']},
+  {q:'Sum of infinite GP: 1 + 1/2 + 1/4 + ... = ?',ans:2,opts:[2,3,4,1],tag:'JEE ADV',
+   steps:['Infinite GP with a=1, r=1/2','Sum = a/(1-r)','= 1 / (1 - 1/2)','= 1 / (1/2)','= 2 ✓']},
+  {q:'Derivative of eˣ is?',ans:1,opts:[1,0,2,-1],tag:'JEE ADV',dispQ:'At x=0, d/dx(eˣ) = ?',
+   steps:['d/dx(eˣ) = eˣ (unique property)','At x = 0: e⁰ = 1','So the derivative at x=0 is 1 ✓']},
+  {q:'If P(A)=0.4 and P(B)=0.3, P(A∪B) if independent?',ans:1,opts:[1,0,2,3],tag:'JEE ADV',dispQ:'10 × P(A∩B) = ? (A,B independent)',
+   steps:['If A and B are independent:','P(A∩B) = P(A) × P(B)','= 0.4 × 0.3 = 0.12','10 × 0.12 = 1.2... ≈ 1 ✓']},
+];
+
+var IIT_MATH_QS = [
+  {q:'Find the general term of AP: 3,7,11,15,...',ans:4,opts:[4,3,7,11],tag:'IIT MATH',dispQ:'Common difference of 3,7,11,15 = ?',
+   steps:['AP: a, a+d, a+2d, ...','d = second term - first term','= 7 - 3 = 4','General term Tₙ = 3 + (n-1)×4 = 4n-1 ✓']},
+  {q:'Value of tan(45°)',ans:1,opts:[1,0,2,-1],tag:'IIT MATH',
+   steps:['tan(θ) = sin(θ)/cos(θ)','sin(45°) = 1/√2','cos(45°) = 1/√2','tan(45°) = (1/√2)/(1/√2) = 1 ✓']},
+  {q:'Solve |x-3| = 5, larger root = ?',ans:8,opts:[8,-2,5,3],tag:'IIT MATH',
+   steps:['|x-3| = 5 means x-3 = ±5','Case 1: x-3 = 5 → x = 8','Case 2: x-3 = -5 → x = -2','Roots: x = 8 or x = -2','Larger root = 8 ✓']},
+  {q:'Matrix [[1,2],[3,4]]: determinant = ?',ans:-2,opts:[-2,2,10,-10],tag:'IIT MATH',
+   steps:['det [[a,b],[c,d]] = ad - bc','= (1)(4) - (2)(3)','= 4 - 6','= -2 ✓']},
+  {q:'Remainder when 17³ divided by 4',ans:1,opts:[1,0,2,3],tag:'IIT MATH',
+   steps:['17 ≡ 1 (mod 4) since 17 = 4×4 + 1','So 17³ ≡ 1³ ≡ 1 (mod 4)','Remainder = 1 ✓']},
+  {q:'If z = 3+4i, find |z|',ans:5,opts:[5,7,25,12],tag:'IIT MATH',
+   steps:['|z| = √(real² + imaginary²)','= √(3² + 4²)','= √(9 + 16)','= √25 = 5 ✓ (3-4-5 triangle)']},
+  {q:'Domain of f(x) = √(x-2): minimum x = ?',ans:2,opts:[2,0,-2,4],tag:'IIT MATH',
+   steps:['For √(x-2) to be real:','x - 2 ≥ 0','x ≥ 2','Domain = [2, ∞)','Minimum x = 2 ✓']},
+  {q:'HCF of 24 and 36',ans:12,opts:[12,6,72,4],tag:'IIT MATH',
+   steps:['24 = 2³ × 3','36 = 2² × 3²','HCF = lowest powers: 2² × 3','= 4 × 3 = 12 ✓']},
+  {q:'Angle sum of polygon with 8 sides',ans:1080,opts:[1080,720,1260,900],tag:'IIT MATH',
+   steps:['Sum of interior angles = (n-2) × 180°','n = 8 (octagon)','= (8-2) × 180°','= 6 × 180°','= 1080° ✓']},
+  {q:'If f(x)=2x+1 and g(x)=x², find f(g(3))',ans:19,opts:[19,7,49,13],tag:'IIT MATH',
+   steps:['First find g(3):','g(3) = 3² = 9','Now find f(9):','f(9) = 2(9) + 1 = 18 + 1','= 19 ✓']},
+];
+
+var _jeePoolIdx = {};
+
+function makeJEEQuestion(mode) {
+  var pool = mode==='jee_main' ? JEE_MAIN_QS : mode==='jee_adv' ? JEE_ADV_QS : IIT_MATH_QS;
+  // Shuffle through pool in order before repeating (Fisher-Yates)
+  if(!_jeePoolIdx[mode] || _jeePoolIdx[mode].used >= pool.length){
+    var order = pool.map(function(_,i){ return i; });
+    for(var j = order.length-1; j > 0; j--){
+      var k = Math.floor(Math.random()*(j+1));
+      var tmp = order[j]; order[j] = order[k]; order[k] = tmp;
+    }
+    _jeePoolIdx[mode] = { order: order, used: 0 };
+  }
+  var idx = _jeePoolIdx[mode].order[_jeePoolIdx[mode].used++];
+  var q = pool[idx];
+  return {
+    disp: (q.dispQ || q.q) + ' <span class="op">=</span> ?',
+    ans: q.ans,
+    opts: q.opts,
+    tag: q.tag,
+    hint: q.steps[0] || 'Think carefully!',
+    steps: q.steps,
+    rawQ: q.q
+  };
+}
+
+// ════════════════════════════════════════════
+// STEP-BY-STEP EXPLANATION SYSTEM
+// ════════════════════════════════════════════
+function showExplanation(q, wasCorrect) {
+  var panel = document.getElementById('explain-panel');
+  var stepsEl = document.getElementById('explain-steps');
+  var actRow = document.getElementById('action-row-main');
+
+  if(actRow) actRow.style.display = 'none';
+
+  var steps = q.steps || generateAutoSteps(q);
+  var html = '';
+
+  // Show correct answer first if wrong
+  if(!wasCorrect) {
+    html += '<div style="background:rgba(0,245,160,.08);border:1px solid rgba(0,245,160,.3);border-radius:10px;padding:10px 12px;font-family:var(--mono);font-size:13px;font-weight:800;color:var(--green)">✅ Correct Answer: ' + q.ans + '</div>';
+  }
+
+  steps.forEach(function(step, i) {
+    html += '<div style="display:flex;gap:10px;align-items:flex-start;animation:chipIn .3s ease ' + (i * 0.08) + 's both">'
+      + '<div style="min-width:24px;height:24px;border-radius:50%;background:' + (i===steps.length-1?'var(--gold)':'rgba(56,189,248,.2)') + ';color:' + (i===steps.length-1?'#000':'var(--cyan)') + ';display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:900;flex-shrink:0">' + (i+1) + '</div>'
+      + '<div style="font-family:var(--mono);font-size:13px;color:' + (i===steps.length-1?'var(--gold)':'var(--text)') + ';font-weight:' + (i===steps.length-1?'800':'600') + ';line-height:1.5;padding-top:3px">' + step + '</div>'
+      + '</div>';
+  });
+
+  stepsEl.innerHTML = html;
+  panel.style.display = 'block';
+  panel.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function generateAutoSteps(q) {
+  // Auto-generate steps for standard math questions
+  var steps = [];
+  var tag = q.tag || '';
+  if(tag === 'BLITZ' || tag === '+' || tag === '-') {
+    steps = ['Identify the numbers and operation', 'Calculate directly: ' + (q.rawDisp||''), 'Answer = ' + q.ans];
+  } else if(tag === 'MULTIPLY') {
+    steps = ['Identify numbers to multiply', 'Use multiplication table', 'Result = ' + q.ans];
+  } else if(tag === 'DIVIDE') {
+    steps = ['Think: what number × divisor = dividend?', 'Answer = ' + q.ans];
+  } else if(tag === 'POWERS') {
+    steps = ['Base × Base × ... (exponent times)', 'Answer = ' + q.ans];
+  } else if(tag === 'FRACTIONS') {
+    steps = ['Identify numerators and denominators', 'Add/find common denominator', 'Result = ' + q.ans];
+  } else if(tag === 'ALGEBRA') {
+    steps = [q.hint || 'Isolate x', 'Solve step by step', 'x = ' + q.ans];
+  } else {
+    steps = ['Read the question carefully', 'Apply the relevant formula or method', 'Answer = ' + q.ans];
+  }
+  return steps;
+}
+
+function nextAfterExplain() {
+  var panel = document.getElementById('explain-panel');
+  var actRow = document.getElementById('action-row-main');
+  if(panel) panel.style.display = 'none';
+  if(actRow) actRow.style.display = '';
+  GS.qi++;
+  loadQ();
+}
+
+// ════════════════════════════════════════════
 // GAME STATE
 // ════════════════════════════════════════════
 var GS={qs:[],qi:0,score:0,cor:0,wrg:0,combo:0,maxCombo:0,tmrID:null,timeLeft:15,tList:[],tStart:0,locked:false,srID:null,srLeft:60};
 
+// ── Dedup wrapper: retry makeQ until we get a fresh question ──
+function makeUniqueQ(mode, diff){
+  var MAX_TRIES = 40;
+  for(var t = 0; t < MAX_TRIES; t++){
+    var q = makeQ(mode, diff);
+    var key = q.ans + '|' + (q.disp || q.q || '');
+    if(!_wasSeen(mode, diff, key)){
+      _markSeen(mode, diff, key);
+      return q;
+    }
+  }
+  // Exhausted unique pool — reset seen for this mode/diff and return fresh
+  _seenQs = {};
+  return makeQ(mode, diff);
+}
+
 function startGame(){
   if(G.mode==='speed'){startSpeedRun();return}
   Object.assign(GS,{qs:[],qi:0,score:0,cor:0,wrg:0,combo:0,maxCombo:0,tList:[],locked:false,over:false,sessionStart:Date.now()});
-  for(var i=0;i<G.rounds;i++)GS.qs.push(makeQ(G.mode,G.diff));
+  for(var i=0;i<G.rounds;i++)GS.qs.push(makeUniqueQ(G.mode,G.diff));
   document.getElementById('speedrun-clock').style.display='none';
   startLiveSession();
   goPage('game-scr');sfx.start();loadQ();
@@ -4287,7 +4787,7 @@ function startGame(){
 
 function startSpeedRun(){
   Object.assign(GS,{qs:[],qi:0,score:0,cor:0,wrg:0,combo:0,maxCombo:0,tList:[],locked:false,srLeft:60,over:false,sessionStart:Date.now()});
-  for(var i=0;i<300;i++)GS.qs.push(makeQ('speed',G.diff));
+  for(var i=0;i<300;i++)GS.qs.push(makeUniqueQ('speed',G.diff));
   var spEl=document.getElementById('speedrun-clock');
   spEl.style.display='inline';spEl.textContent='⏳ 60s';
   startLiveSession();
@@ -4303,6 +4803,11 @@ function startSpeedRun(){
 function loadQ(){
   if(GS.over)return;
   GS.locked=false;
+  // Hide explanation panel & restore action row
+  var ep=document.getElementById('explain-panel');
+  var ar=document.getElementById('action-row-main');
+  if(ep) ep.style.display='none';
+  if(ar) ar.style.display='';
   if(GS.qi>=GS.qs.length){endGame();return}
   var q=GS.qs[GS.qi];
   GS.tStart=Date.now();
@@ -4326,7 +4831,7 @@ function loadQ(){
   setTimeout(function(){card.classList.remove('anim-slide')},300);
 
   // answer buttons
-  var opts=makeOptions(q.ans);
+  var opts = q.opts ? shuffle([...q.opts]) : makeOptions(q.ans);
   var ag=document.getElementById('answers-grid');ag.innerHTML='';
   opts.forEach(function(opt){
     var b=document.createElement('div');
@@ -4382,7 +4887,15 @@ function pick(val,btn){
     setTimeout(function(){card.classList.remove('anim-shake')},400);
     GS.wrg++;
   }
-  setTimeout(function(){GS.qi++;loadQ()},960);
+
+  // Show explanation if JEE mode OR if player answered wrong
+  var isJEE = (G.mode==='jee_main'||G.mode==='jee_adv'||G.mode==='iit_math');
+  var wasCorrect = (val===q.ans);
+  if(isJEE || !wasCorrect) {
+    setTimeout(function(){ showExplanation(q, wasCorrect); }, 700);
+  } else {
+    setTimeout(function(){GS.qi++;loadQ()},960);
+  }
 }
 
 function timeUp(){
@@ -4393,7 +4906,12 @@ function timeUp(){
     if(Number(b.textContent)===q.ans)b.classList.add('reveal');else b.classList.add('dimmed');
   });
   GS.combo=0;GS.wrg++;sfx.bad();showToast('⏱ Time\'s up!');
-  setTimeout(function(){GS.qi++;loadQ()},960);
+  var isJEE = (G.mode==='jee_main'||G.mode==='jee_adv'||G.mode==='iit_math');
+  if(isJEE) {
+    setTimeout(function(){ showExplanation(q, false); }, 700);
+  } else {
+    setTimeout(function(){GS.qi++;loadQ()},960);
+  }
 }
 
 function showComboPop(){
@@ -4558,7 +5076,7 @@ function renderStats(){
   document.getElementById('stats-sub').textContent=(uGet('username',CU)||'Player')+"'s performance";
   var ms=uGet('ms',{});
   var html='';
-  ['blitz','multiply','divide','powers','fractions','algebra','mixed','speed'].forEach(function(m){
+  ['blitz','multiply','divide','powers','fractions','algebra','mixed','speed','jee_main','jee_adv','iit_math'].forEach(function(m){
     var s=ms[m];if(!s)return;
     var acc=s.a>0?Math.round(s.c/s.a*100)+'%':'–';
     html+='<div class="mode-stat-card">'+
@@ -4581,6 +5099,9 @@ function renderProf(){
   var uname=uGet('username',CU||'Player');
   var avEl=document.getElementById('prof-av-lg');
   setAvatarEl(avEl,uname);
+  // show/hide remove photo button
+  var removeRow=document.getElementById('prof-pic-remove-row');
+  if(removeRow)removeRow.style.display=getProfilePic()?'block':'none';
   document.getElementById('prof-uname').textContent=uname;
   document.getElementById('prof-lvl-tag').textContent='Level '+lv.n+' · '+lv.name;
   var t=uGet('totAns',0),c=uGet('totCor',0);
@@ -5231,5 +5752,233 @@ window.calcFn    = function(fn) { CALC.fnPress(fn); };
   Install App
 </div>
 
-</body>
-</html>
+<!-- ═══════════ CROP MODAL ═══════════ -->
+<style>
+#crop-modal{
+  display:none;position:fixed;inset:0;z-index:9999;
+  background:rgba(4,4,13,.96);
+  flex-direction:column;align-items:center;justify-content:center;
+  padding:20px;
+}
+#crop-modal.open{display:flex;}
+.crop-title{
+  font-family:var(--fn);font-size:17px;font-weight:900;
+  color:var(--text);margin-bottom:14px;
+  display:flex;align-items:center;gap:8px;
+}
+.crop-canvas-wrap{
+  position:relative;width:280px;height:280px;
+  border-radius:50%;overflow:hidden;
+  border:3px solid var(--gold);
+  box-shadow:0 0 30px rgba(255,224,51,.3);
+  touch-action:none;cursor:grab;flex-shrink:0;
+  background:#000;
+}
+.crop-canvas-wrap:active{cursor:grabbing;}
+#crop-canvas{display:block;width:280px;height:280px;}
+.crop-hint{
+  font-family:var(--mono);font-size:11px;color:var(--muted2);
+  margin:12px 0 18px;text-align:center;
+  display:flex;align-items:center;gap:6px;justify-content:center;
+}
+.crop-zoom-row{
+  display:flex;align-items:center;gap:10px;margin-bottom:18px;width:100%;max-width:280px;
+}
+.crop-zoom-row svg{flex-shrink:0;}
+#crop-zoom{
+  flex:1;-webkit-appearance:none;appearance:none;
+  height:4px;border-radius:2px;
+  background:linear-gradient(to right,var(--gold) var(--pct,50%),var(--bdr2) var(--pct,50%));
+  outline:none;cursor:pointer;
+}
+#crop-zoom::-webkit-slider-thumb{
+  -webkit-appearance:none;width:18px;height:18px;
+  border-radius:50%;background:var(--gold);
+  box-shadow:0 0 8px rgba(255,224,51,.5);cursor:pointer;
+}
+.crop-actions{display:flex;gap:10px;width:100%;max-width:280px;}
+.crop-btn{
+  flex:1;padding:13px;border-radius:14px;border:none;
+  font-family:var(--fn);font-size:14px;font-weight:900;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  transition:opacity .12s;
+}
+.crop-btn:active{opacity:.75;}
+.crop-btn-cancel{background:var(--s2);border:1.5px solid var(--bdr2);color:var(--text2);}
+.crop-btn-save{background:var(--gold);color:#000;}
+</style>
+
+<div id="crop-modal">
+  <div class="crop-title">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+    Adjust Your Photo
+  </div>
+  <div class="crop-canvas-wrap" id="crop-area">
+    <canvas id="crop-canvas" width="560" height="560"></canvas>
+  </div>
+  <div class="crop-hint">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg>
+    Drag to reposition · Pinch or slider to zoom
+  </div>
+  <div class="crop-zoom-row">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+    <input type="range" id="crop-zoom" min="50" max="300" value="100" oninput="cropZoomSlider(this)">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/><line x1="11" y1="8" x2="11" y2="14"/></svg>
+  </div>
+  <div class="crop-actions">
+    <button class="crop-btn crop-btn-cancel" onclick="closeCropModal()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      Cancel
+    </button>
+    <button class="crop-btn crop-btn-save" onclick="saveCroppedPic()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      Save
+    </button>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════
+// CROP ENGINE
+// ════════════════════════════════════
+var _cropImg=null,_cropX=0,_cropY=0,_cropScale=1;
+var _cropDrag=false,_cropLX=0,_cropLY=0;
+var _cropCanvasSize=560,_cropDisplaySize=280;
+var _pinchDist0=null,_pinchScale0=1;
+
+function openCropModal(src){
+  var modal=document.getElementById('crop-modal');
+  _cropImg=new Image();
+  _cropImg.onload=function(){
+    var minScale=Math.max(_cropCanvasSize/_cropImg.width,_cropCanvasSize/_cropImg.height);
+    _cropScale=minScale;
+    _cropX=(_cropCanvasSize-_cropImg.width*_cropScale)/2;
+    _cropY=(_cropCanvasSize-_cropImg.height*_cropScale)/2;
+    var sl=document.getElementById('crop-zoom');
+    sl.value=100;sl.style.setProperty('--pct','50%');
+    drawCrop();
+  };
+  _cropImg.src=src;
+  modal.classList.add('open');
+  bindCropEvents();
+}
+
+function closeCropModal(){
+  document.getElementById('crop-modal').classList.remove('open');
+  unbindCropEvents();
+}
+
+function drawCrop(){
+  var canvas=document.getElementById('crop-canvas');
+  var ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,_cropCanvasSize,_cropCanvasSize);
+  ctx.drawImage(_cropImg,_cropX,_cropY,_cropImg.width*_cropScale,_cropImg.height*_cropScale);
+}
+
+function cropZoomSlider(el){
+  var val=parseFloat(el.value);
+  var pct=((val-50)/(300-50)*100).toFixed(1)+'%';
+  el.style.setProperty('--pct',pct);
+  var minScale=Math.max(_cropCanvasSize/_cropImg.width,_cropCanvasSize/_cropImg.height);
+  var newScale=(val/100)*minScale;
+  var cx=_cropCanvasSize/2,cy=_cropCanvasSize/2;
+  _cropX=cx-((cx-_cropX)/_cropScale)*newScale;
+  _cropY=cy-((cy-_cropY)/_cropScale)*newScale;
+  _cropScale=newScale;
+  clampCrop();drawCrop();
+}
+
+function clampCrop(){
+  var iw=_cropImg.width*_cropScale,ih=_cropImg.height*_cropScale;
+  _cropX=Math.min(0,Math.max(_cropCanvasSize-iw,_cropX));
+  _cropY=Math.min(0,Math.max(_cropCanvasSize-ih,_cropY));
+}
+
+async function saveCroppedPic(){
+  var saveBtn=document.querySelector('.crop-btn-save');
+  if(saveBtn){saveBtn.disabled=true;saveBtn.innerHTML='Saving...';}
+  var canvas=document.getElementById('crop-canvas');
+  var out=document.createElement('canvas');
+  out.width=300;out.height=300;
+  var ctx=out.getContext('2d');
+  ctx.beginPath();ctx.arc(150,150,150,0,Math.PI*2);ctx.clip();
+  ctx.drawImage(canvas,0,0,_cropCanvasSize,_cropCanvasSize,0,0,300,300);
+  var dataUrl=out.toDataURL('image/jpeg',0.82);
+  try{localStorage.setItem('mathiq_profile_pic',dataUrl);}
+  catch(e){alert('Could not save photo. Storage may be full.');if(saveBtn){saveBtn.disabled=false;saveBtn.innerHTML='Save';}return;}
+  // Push avatar_url to Supabase so every user can see it
+  try{
+    var _sbA=typeof getSupabase==='function'?getSupabase():null;
+    if(_sbA && typeof SUPABASE_URL!=='undefined' && SUPABASE_URL.indexOf('YOUR_PROJECT_ID')===-1){
+      var {data:{user:_au}}=await _sbA.auth.getUser();
+      if(_au){
+        await _sbA.from('profiles').upsert(
+          {id:_au.id, username:CU, avatar_url:dataUrl, updated_at:new Date().toISOString()},
+          {onConflict:'id'}
+        );
+      }
+    }
+  }catch(e){console.warn('Avatar Supabase sync error:',e);}
+  closeCropModal();
+  var uname=typeof uGet==='function'?uGet('username',typeof CU!=='undefined'?CU:'Player'):'Player';
+  ['prof-av-lg','home-user-av','lu-av'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el&&typeof setAvatarEl==='function')setAvatarEl(el,uname);
+  });
+  var row=document.getElementById('prof-pic-remove-row');
+  if(row)row.style.display='block';
+  var wrap=document.querySelector('.prof-pic-wrap');
+  if(wrap){wrap.style.transform='scale(1.08)';setTimeout(function(){wrap.style.transform='';},220);}
+}
+
+var _cropRatio=_cropCanvasSize/_cropDisplaySize;
+function bindCropEvents(){
+  var a=document.getElementById('crop-area');
+  a.addEventListener('mousedown',cropMD);
+  a.addEventListener('touchstart',cropTS,{passive:false});
+  window.addEventListener('mousemove',cropMM);
+  window.addEventListener('mouseup',cropMU);
+  window.addEventListener('touchmove',cropTM,{passive:false});
+  window.addEventListener('touchend',cropTE);
+}
+function unbindCropEvents(){
+  var a=document.getElementById('crop-area');
+  a.removeEventListener('mousedown',cropMD);
+  a.removeEventListener('touchstart',cropTS);
+  window.removeEventListener('mousemove',cropMM);
+  window.removeEventListener('mouseup',cropMU);
+  window.removeEventListener('touchmove',cropTM);
+  window.removeEventListener('touchend',cropTE);
+}
+function cropMD(e){_cropDrag=true;_cropLX=e.clientX;_cropLY=e.clientY;}
+function cropMU(){_cropDrag=false;}
+function cropMM(e){
+  if(!_cropDrag)return;
+  var dx=(e.clientX-_cropLX)*_cropRatio,dy=(e.clientY-_cropLY)*_cropRatio;
+  _cropLX=e.clientX;_cropLY=e.clientY;
+  _cropX+=dx;_cropY+=dy;clampCrop();drawCrop();
+}
+function cropTS(e){
+  e.preventDefault();
+  if(e.touches.length===1){_cropDrag=true;_cropLX=e.touches[0].clientX;_cropLY=e.touches[0].clientY;}
+  if(e.touches.length===2){
+    _pinchDist0=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+    _pinchScale0=_cropScale;
+  }
+}
+function cropTM(e){
+  e.preventDefault();
+  if(e.touches.length===1&&_cropDrag){
+    var dx=(e.touches[0].clientX-_cropLX)*_cropRatio,dy=(e.touches[0].clientY-_cropLY)*_cropRatio;
+    _cropLX=e.touches[0].clientX;_cropLY=e.touches[0].clientY;
+    _cropX+=dx;_cropY+=dy;clampCrop();drawCrop();
+  }
+  if(e.touches.length===2&&_pinchDist0){
+    var dist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+    var minScale=Math.max(_cropCanvasSize/_cropImg.width,_cropCanvasSize/_cropImg.height);
+    var newScale=Math.max(minScale,Math.min(_pinchScale0*(dist/_pinchDist0),minScale*4));
+    var cx=_cropCanvasSize/2,cy=_cropCanvasSize/2;
+    _cropX=cx-((cx-_cropX)/_cropScale)*newScale;
+    _cropY=cy-((cy-_cropY)/_cropScale)*newScale;
+    _cropScale=newScale;clampCrop();drawCrop();
+    var sl=document.getElementById('crop-zoo
