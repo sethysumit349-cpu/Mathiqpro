@@ -1,0 +1,23 @@
+{
+  "name": "MathIQ Pro",
+  "short_name": "MathIQ",
+  "description": "JEE-level mathematics practice with adaptive quizzes and timed exams.",
+  "start_url": "./index.html?v=5",
+  "display": "standalone",
+  "background_color": "#04040d",
+  "theme_color": "#04040d",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' x2='1' y1='0' y2='1'%3E%3Cstop offset='0' stop-color='%2300f5a0'/%3E%3Cstop offset='1' stop-color='%2338bdf8'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='512' height='512' rx='96' fill='%2304040d'/%3E%3Ccircle cx='256' cy='256' r='170' fill='none' stroke='url(%23g)' stroke-width='28'/%3E%3Ccircle cx='256' cy='256' r='88' fill='none' stroke='%23ffe033' stroke-width='22'/%3E%3Ccircle cx='256' cy='256' r='24' fill='%23ffe033'/%3E%3C/svg%3E",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' x2='1' y1='0' y2='1'%3E%3Cstop offset='0' stop-color='%2300f5a0'/%3E%3Cstop offset='1' stop-color='%2338bdf8'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='512' height='512' rx='96' fill='%2304040d'/%3E%3Ccircle cx='256' cy='256' r='170' fill='none' stroke='url(%23g)' stroke-width='28'/%3E%3Ccircle cx='256' cy='256' r='88' fill='none' stroke='%23ffe033' stroke-width='22'/%3E%3Ccircle cx='256' cy='256' r='24' fill='%23ffe033'/%3E%3C/svg%3E",
+      "sizes": "1024x1024",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
