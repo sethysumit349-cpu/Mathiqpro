@@ -994,6 +994,23 @@ input,textarea{-webkit-user-select:text!important;user-select:text!important;fon
   display:flex;gap:10px;align-items:flex-start;
 }
 
+
+/* ── JEE QUESTION BANK ── */
+.jb-panel{background:var(--s1);border:1px solid var(--bdr);border-radius:var(--r);padding:12px;margin-bottom:12px}
+.jb-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.jb-select,.jb-input{width:100%;background:var(--s2);border:1px solid var(--bdr2);color:var(--text);border-radius:10px;padding:10px 12px;font-weight:700;font-size:13px}
+.jb-select:focus,.jb-input:focus{outline:none;border-color:var(--gold)}
+.jb-stat{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--text2);font-family:var(--mono)}
+.jb-question{font-size:17px;font-weight:800;line-height:1.45}
+.jb-meta{font-size:11px;color:var(--muted2);font-family:var(--mono);display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.jb-opt{border:1px solid var(--bdr2);background:var(--s2);padding:11px;border-radius:10px;font-weight:700;margin-bottom:8px;cursor:pointer}
+.jb-opt.active{border-color:var(--gold);color:var(--gold)}
+.jb-opt.good{border-color:var(--green);color:var(--green)}
+.jb-opt.bad{border-color:var(--red);color:var(--red)}
+.jb-review-item{border:1px solid rgba(251,113,133,.25);background:rgba(251,113,133,.08);padding:10px;border-radius:10px;margin-bottom:10px}
+.jb-pill{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:900;letter-spacing:.5px;background:rgba(56,189,248,.12);color:var(--cyan);border:1px solid rgba(56,189,248,.3)}
+@media(max-width:360px){.jb-grid{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -1845,6 +1862,17 @@ input,textarea{-webkit-user-select:text!important;user-select:text!important;fon
     </div>
   </div>
 
+
+  <div class="modes-grid" style="grid-template-columns:1fr;margin-top:8px">
+    <div class="mode-card span2" onclick="openJEEBank()" style="background:linear-gradient(135deg,#0a1028,#0a1b2a);border:1.5px solid rgba(56,189,248,.32);min-height:88px">
+      <div class="mode-overlay" style="background:none;justify-content:center;padding:14px 18px">
+        <div class="mode-name">JEE Question Bank</div>
+        <div class="mode-desc">2000-question ready system • Filters • Timer • Review</div>
+        <div class="mode-tag" style="background:rgba(56,189,248,.22);color:#38bdf8;border-color:rgba(56,189,248,.4)">NEW</div>
+      </div>
+    </div>
+  </div>
+
   <div class="nav-row" style="grid-template-columns:repeat(6,1fr);gap:4px">
     <div class="nav-btn" onclick="goPage('lb-scr')"><span class="nb-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg></span>Board</div>
     <div class="nav-btn" onclick="goPage('stats-scr')"><span class="nb-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>Stats</div>
@@ -1860,6 +1888,52 @@ input,textarea{-webkit-user-select:text!important;user-select:text!important;fon
 
 </div>
 </div>
+
+
+<!-- ═══════════ JEE QUESTION BANK ═══════════ -->
+<div id="jee-bank-scr" class="scr"><div class="pad">
+  <button class="back-btn" onclick="goPage('home-scr')">&#8592; Back</button>
+  <div class="cfg-title">JEE Question Bank</div>
+  <div class="cfg-sub" id="jb-data-status">Loading question bank…</div>
+
+  <div class="jb-panel">
+    <div class="section-label">Configure Practice</div>
+    <div class="jb-grid">
+      <select id="jb-exam" class="jb-select"><option>JEE Main</option><option>JEE Advanced</option><option>IIT Mathematics</option><option>Mixed Practice</option></select>
+      <select id="jb-chapter" class="jb-select"></select>
+      <select id="jb-difficulty" class="jb-select"><option>All</option><option>Easy</option><option>Medium</option><option>Hard</option></select>
+      <select id="jb-count" class="jb-select"><option>10</option><option>20</option><option>30</option><option>50</option><option>100</option></select>
+      <select id="jb-timer" class="jb-select"><option value="0">No timer</option><option value="15">15 minutes</option><option value="30">30 minutes</option><option value="45">45 minutes</option><option value="60">60 minutes</option><option value="custom">Custom timer</option></select>
+      <input id="jb-custom-timer" class="jb-input" type="number" min="1" placeholder="Custom minutes" style="display:none">
+    </div>
+    <input id="jb-search" class="jb-input" placeholder="Search by keyword, chapter, or ID" style="margin-top:8px">
+    <div class="jb-stat" style="margin-top:8px"><span id="jb-match-count">Matches: 0</span><span id="jb-bookmark-count">Bookmarks: 0</span><span id="jb-attempted">Attempted: 0</span></div>
+    <div class="vstack" style="padding-top:10px"><button class="btn-secondary" onclick="startJEEBankQuiz()">Start Quiz</button></div>
+  </div>
+
+  <div id="jb-quiz-wrap" class="jb-panel" style="display:none">
+    <div class="jb-stat"><span id="jb-q-progress">Question 1/10</span><span id="jb-time">No timer</span></div>
+    <div class="jb-meta"><span id="jb-q-id"></span><span id="jb-q-exam"></span><span id="jb-q-level"></span><span id="jb-q-chapter"></span></div>
+    <div class="jb-question" id="jb-question-text">Question text</div>
+    <div id="jb-options" style="margin-top:10px"></div>
+    <input id="jb-integer-answer" class="jb-input" placeholder="Enter integer answer" style="display:none;margin-top:8px">
+    <button id="jb-check-btn" class="btn-secondary" style="margin-top:8px;display:none" onclick="jbCheckAnswer()">Check Answer</button>
+    <div id="jb-feedback" class="jb-panel" style="display:none;margin-top:10px"></div>
+    <div class="jb-stat" style="margin-top:10px">
+      <button class="btn-secondary" style="width:32%" onclick="jbPrev()">Previous</button>
+      <button class="btn-secondary" style="width:32%" onclick="jbNext()">Next</button>
+      <button class="btn-secondary" style="width:32%" onclick="jbSubmitQuiz()">Submit Test</button>
+    </div>
+    <button class="btn-secondary" style="margin-top:8px" onclick="jbToggleBookmark()" id="jb-bookmark-btn">Save Question</button>
+  </div>
+
+  <div id="jb-result-wrap" class="jb-panel" style="display:none">
+    <div class="section-label">Result Summary</div>
+    <div class="jb-stat" id="jb-result-stats"></div>
+    <div class="section-label" style="margin-top:12px">Review Mistakes</div>
+    <div id="jb-review-list"></div>
+  </div>
+</div></div>
 
 <!-- ═══════════ CONFIG ═══════════ -->
 <div id="cfg-scr" class="scr">
@@ -6079,6 +6153,196 @@ function cropTM(e){
 </script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"7939e04a4baf43c8b86a560f74aac60e","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4a4b658285de48d48c272804f9894927","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+
+
+<script>
+(function(){
+  var JB_CHAPTERS=["All Chapters","Sets, Relations and Functions","Complex Numbers","Quadratic Equations","Sequences and Series","Binomial Theorem","Permutations and Combinations","Probability","Matrices","Determinants","Limits and Continuity","Differentiation","Application of Derivatives","Indefinite Integration","Definite Integration","Area Under Curve","Differential Equations","Straight Lines","Circle","Parabola","Ellipse","Hyperbola","Three Dimensional Geometry","Vectors","Trigonometry","Inverse Trigonometry","Mathematical Reasoning","Statistics","Heights and Distances"];
+  var JB={all:[],filtered:[],quiz:[],idx:0,answers:{},startedAt:0,timerSec:0,tmr:null,reviewed:{},bookmarks:new Set(),progress:{attempted:0,correct:0,wrong:0,bookmarked:0,chapterWise:{}}};
+  var LS_BOOK='mathiq_jee_bookmarks_v1',LS_PROG='mathiq_jee_progress_v1';
+
+  function byId(id){return document.getElementById(id)}
+  function safeJSON(v,f){try{return JSON.parse(v)}catch(e){return f}}
+  function persist(){localStorage.setItem(LS_BOOK,JSON.stringify(Array.from(JB.bookmarks)));localStorage.setItem(LS_PROG,JSON.stringify(JB.progress));refreshStats();}
+  function loadLocal(){JB.bookmarks=new Set(safeJSON(localStorage.getItem(LS_BOOK),[]));JB.progress=safeJSON(localStorage.getItem(LS_PROG),JB.progress)||JB.progress;refreshStats();}
+  function refreshStats(){if(!byId('jb-bookmark-count'))return;byId('jb-bookmark-count').textContent='Bookmarks: '+JB.bookmarks.size;byId('jb-attempted').textContent='Attempted: '+(JB.progress.attempted||0);}
+
+  function normalizeQuestion(q){
+    return {
+      id:q.id||('Q-'+Math.random().toString(36).slice(2,8)), exam:q.exam||'JEE Main', level:q.level||'Medium', chapter:q.chapter||'Sets, Relations and Functions',
+      topic:q.topic||'', questionType:q.questionType||'MCQ', question:q.question||'', options:Array.isArray(q.options)?q.options:[],
+      correctAnswer:q.correctAnswer||'', answerValue:q.answerValue||'', solution:Array.isArray(q.solution)?q.solution:[q.solution||''],
+      formulaUsed:Array.isArray(q.formulaUsed)?q.formulaUsed:[], year:q.year||'', source:q.source||'User provided dataset', marks:Number(q.marks||4), negativeMarks:Number(q.negativeMarks||-1)
+    };
+  }
+
+  function fallbackData(){return [
+    {id:'JM-S01',exam:'JEE Main',level:'Easy',chapter:'Circle',topic:'Equation',questionType:'MCQ',question:'Equation of circle with center at origin and radius 3 is:',options:['x+y=3','x²+y²=9','x²-y²=9','x²+y²=3'],correctAnswer:'B',answerValue:'x²+y²=9',solution:['For origin centered circle: x²+y²=r².','r=3 so r²=9.'],formulaUsed:['x²+y²=r²'],marks:4,negativeMarks:-1},
+    {id:'JA-S02',exam:'JEE Advanced',level:'Hard',chapter:'Probability',topic:'Independent events',questionType:'MCQ',question:'If P(A)=0.6 and P(B)=0.5 independent, then P(A∩B)=?',options:['0.3','0.11','1.1','0.6'],correctAnswer:'A',answerValue:'0.3',solution:['Independent events: P(A∩B)=P(A)P(B).','0.6×0.5=0.3'],formulaUsed:['P(A∩B)=P(A)P(B)'],marks:4,negativeMarks:-1}
+  ];}
+
+  async function loadQuestions(){
+    var status=byId('jb-data-status');
+    var candidates=['data/jee-math-questions.json','data/jee-math-questions.sample.json'];
+    var loaded=null,source='';
+    for(var i=0;i<candidates.length;i++){
+      try{var r=await fetch(candidates[i],{cache:'no-store'});if(r.ok){loaded=await r.json();source=candidates[i];break;}}catch(e){}
+    }
+    if(!Array.isArray(loaded)) {loaded=fallbackData();source='internal fallback sample';}
+    JB.all=loaded.map(normalizeQuestion);
+    if(status){status.textContent='Loaded '+JB.all.length+' questions from '+source+'. Supports scaling to 2000 real questions.';}
+    applyFilters();
+  }
+
+  function populateChapters(){var c=byId('jb-chapter');if(!c)return;c.innerHTML='';JB_CHAPTERS.forEach(function(ch){var o=document.createElement('option');o.textContent=ch;c.appendChild(o);});}
+  function examMatch(q,exam){if(exam==='Mixed Practice')return true;return q.exam===exam;}
+  function applyFilters(){
+    var exam=byId('jb-exam').value,chapter=byId('jb-chapter').value,diff=byId('jb-difficulty').value,term=(byId('jb-search').value||'').toLowerCase().trim();
+    JB.filtered=JB.all.filter(function(q){
+      if(!examMatch(q,exam)) return false;
+      if(chapter!=='All Chapters' && q.chapter!==chapter) return false;
+      if(diff!=='All' && q.level!==diff) return false;
+      if(term){var hay=(q.id+' '+q.chapter+' '+q.topic+' '+q.question).toLowerCase();if(hay.indexOf(term)===-1)return false;}
+      return true;
+    });
+    byId('jb-match-count').textContent='Matches: '+JB.filtered.length;
+  }
+
+  function shuffle(arr){for(var i=arr.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=arr[i];arr[i]=arr[j];arr[j]=t;}return arr;}
+  function pickQuizSet(){var count=parseInt(byId('jb-count').value,10)||10;var base=JB.filtered.slice();shuffle(base);if(base.length===0)return [];if(base.length<count){var out=[];while(out.length<count){out.push(base[out.length%base.length]);}return out;}return base.slice(0,count);}
+
+  window.openJEEBank=function(){goPage('jee-bank-scr');};
+  window.startJEEBankQuiz=function(){
+    applyFilters();
+    JB.quiz=pickQuizSet();
+    if(!JB.quiz.length){showToast('No questions match current filters');return;}
+    JB.idx=0;JB.answers={};JB.reviewed={};JB.startedAt=Date.now();
+    byId('jb-result-wrap').style.display='none';byId('jb-quiz-wrap').style.display='block';
+    var timerSel=byId('jb-timer').value,min=0;
+    if(timerSel==='custom'){min=parseInt(byId('jb-custom-timer').value,10)||0;} else min=parseInt(timerSel,10)||0;
+    JB.timerSec=min*60;clearInterval(JB.tmr);
+    if(JB.timerSec>0){JB.tmr=setInterval(function(){JB.timerSec--;byId('jb-time').textContent='Time: '+Math.max(0,Math.floor(JB.timerSec/60))+':'+String(Math.max(0,JB.timerSec%60)).padStart(2,'0');if(JB.timerSec<=0){clearInterval(JB.tmr);jbSubmitQuiz();}},1000);}else{byId('jb-time').textContent='No timer';}
+    renderQBQuestion();
+  };
+
+  function currentQ(){return JB.quiz[JB.idx];}
+  function getCorrectSet(q){if(q.questionType==='Multiple Correct'){return new Set(String(q.correctAnswer||'').split(',').map(function(x){return x.trim();}).filter(Boolean));}return new Set([String(q.correctAnswer||'').trim()]);}
+  function optionLabel(i){return String.fromCharCode(65+i)}
+
+  function renderQBQuestion(){
+    var q=currentQ(); if(!q) return;
+    byId('jb-q-progress').textContent='Question '+(JB.idx+1)+'/'+JB.quiz.length;
+    byId('jb-q-id').textContent=q.id;byId('jb-q-exam').textContent=q.exam;byId('jb-q-level').textContent=q.level;byId('jb-q-chapter').textContent=q.chapter;
+    byId('jb-question-text').textContent=q.question;
+    byId('jb-feedback').style.display='none';
+    byId('jb-bookmark-btn').textContent=JB.bookmarks.has(q.id)?'Bookmarked ✓':'Save Question';
+    var optWrap=byId('jb-options');optWrap.innerHTML='';
+    byId('jb-integer-answer').style.display='none';byId('jb-check-btn').style.display='none';
+    var ans=JB.answers[q.id];
+    if(q.questionType==='Integer'){
+      byId('jb-integer-answer').style.display='block';byId('jb-check-btn').style.display='block';
+      byId('jb-integer-answer').value=ans?ans.value:'';
+      return;
+    }
+    if(q.questionType==='Multiple Correct'){byId('jb-check-btn').style.display='block';}
+    q.options.forEach(function(op,i){
+      var label=optionLabel(i), row=document.createElement('div');row.className='jb-opt';
+      row.textContent=label+'. '+op;
+      row.dataset.label=label;
+      if(ans&&ans.selected&&ans.selected.indexOf(label)>-1)row.classList.add('active');
+      row.onclick=function(){
+        if(q.questionType==='Multiple Correct'){
+          row.classList.toggle('active');
+        } else {
+          var selected=[label];
+          JB.answers[q.id]={selected:selected,value:op,checked:true};
+          jbRevealFeedback();
+        }
+      };
+      optWrap.appendChild(row);
+    });
+  }
+
+  window.jbCheckAnswer=function(){
+    var q=currentQ(); if(!q) return;
+    if(q.questionType==='Integer'){
+      var v=(byId('jb-integer-answer').value||'').trim();JB.answers[q.id]={selected:[v],value:v,checked:true};
+    } else if(q.questionType==='Multiple Correct'){
+      var sel=Array.from(document.querySelectorAll('#jb-options .jb-opt.active')).map(function(el){return el.dataset.label;});
+      JB.answers[q.id]={selected:sel,value:sel.join(','),checked:true};
+    }
+    jbRevealFeedback();
+  };
+
+  function setEq(a,b){if(a.size!==b.size)return false;for(var v of a){if(!b.has(v))return false;}return true;}
+  function jbRevealFeedback(){
+    var q=currentQ(),ans=JB.answers[q.id]; if(!ans)return;
+    var correct=getCorrectSet(q), chosen=new Set((ans.selected||[]).map(function(x){return String(x).trim();}).filter(Boolean));
+    var isCorrect;
+    if(q.questionType==='Integer'){isCorrect=String(ans.value).trim()===String(q.correctAnswer).trim()||String(ans.value).trim()===String(q.answerValue).trim();}
+    else{isCorrect=setEq(correct,chosen);}    
+    ans.isCorrect=isCorrect;
+    var fb=byId('jb-feedback');
+    fb.style.display='block';
+    var sol=(q.solution||[]).map(function(st,i){return '<li>'+st+'</li>';}).join('');
+    var forms=(q.formulaUsed||[]).map(function(f){return '<span class="jb-pill" style="margin-right:6px">'+f+'</span>';}).join('');
+    fb.innerHTML='<div style="font-weight:900;color:'+(isCorrect?'var(--green)':'var(--red)')+'">'+(isCorrect?'Correct ✓':'Incorrect ✗')+'</div>'+
+      '<div style="margin-top:6px;font-size:13px"><b>Correct Answer:</b> '+q.correctAnswer+' ('+q.answerValue+')</div>'+
+      '<div style="margin-top:6px"><b>Formulas Used:</b><div style="margin-top:4px">'+(forms||'<span style="color:var(--muted2)">Not provided</span>')+'</div></div>'+
+      '<div style="margin-top:6px"><b>Step-by-step Explanation</b><ol style="padding-left:18px;margin-top:5px">'+sol+'</ol></div>';
+
+    if(!JB.reviewed[q.id]){
+      JB.reviewed[q.id]=true;
+      JB.progress.attempted=(JB.progress.attempted||0)+1;
+      if(isCorrect) JB.progress.correct=(JB.progress.correct||0)+1; else JB.progress.wrong=(JB.progress.wrong||0)+1;
+      JB.progress.chapterWise[q.chapter]=JB.progress.chapterWise[q.chapter]||{attempted:0,correct:0,wrong:0};
+      JB.progress.chapterWise[q.chapter].attempted++;
+      if(isCorrect) JB.progress.chapterWise[q.chapter].correct++; else JB.progress.chapterWise[q.chapter].wrong++;
+      persist();
+    }
+
+    if(q.questionType!=='Integer'&&q.questionType!=='Multiple Correct'){
+      Array.from(document.querySelectorAll('#jb-options .jb-opt')).forEach(function(el){
+        var l=el.dataset.label;
+        if(correct.has(l)) el.classList.add('good');
+        if(chosen.has(l)&&!correct.has(l)) el.classList.add('bad');
+      });
+    }
+  }
+
+  window.jbPrev=function(){if(JB.idx>0){JB.idx--;renderQBQuestion();}};
+  window.jbNext=function(){if(JB.idx<JB.quiz.length-1){JB.idx++;renderQBQuestion();}};
+  window.jbToggleBookmark=function(){var q=currentQ();if(!q)return;if(JB.bookmarks.has(q.id))JB.bookmarks.delete(q.id);else JB.bookmarks.add(q.id);JB.progress.bookmarked=JB.bookmarks.size;persist();byId('jb-bookmark-btn').textContent=JB.bookmarks.has(q.id)?'Bookmarked ✓':'Save Question';};
+
+  window.jbSubmitQuiz=function(){
+    clearInterval(JB.tmr);
+    var correct=0,wrong=0,un=0,totalMarks=0;
+    JB.quiz.forEach(function(q){
+      var a=JB.answers[q.id];
+      if(!a){un++;return;}
+      var ok=!!a.isCorrect;
+      if(ok){correct++;totalMarks+=Number(q.marks||4);}else{wrong++;totalMarks+=Number(q.negativeMarks||0);}    
+    });
+    var timeTaken=Math.round((Date.now()-JB.startedAt)/1000);
+    var attempted=correct+wrong;
+    var acc=attempted?Math.round((correct/attempted)*100):0;
+    byId('jb-result-wrap').style.display='block';
+    byId('jb-result-stats').innerHTML='<span>Total score: '+totalMarks+'</span><span>Correct: '+correct+'</span><span>Wrong: '+wrong+'</span><span>Unattempted: '+un+'</span><span>Accuracy: '+acc+'%</span><span>Time taken: '+Math.floor(timeTaken/60)+'m '+(timeTaken%60)+'s</span>';
+    var mistakes=JB.quiz.filter(function(q){var a=JB.answers[q.id];return a&&a.isCorrect===false;});
+    byId('jb-review-list').innerHTML=mistakes.length?mistakes.map(function(q){
+      return '<div class="jb-review-item"><div style="font-weight:800">'+q.id+' • '+q.chapter+'</div><div style="font-size:13px;margin:4px 0">'+q.question+'</div><div style="font-size:12px;color:var(--text2)"><b>Correct:</b> '+q.correctAnswer+' ('+q.answerValue+')</div></div>';
+    }).join(''):'<div style="color:var(--green);font-weight:800">Great work! No mistakes to review.</div>';
+    byId('jb-quiz-wrap').style.display='none';
+  };
+
+  ['jb-exam','jb-chapter','jb-difficulty','jb-count','jb-search'].forEach(function(id){document.addEventListener('input',function(e){if(e.target&&e.target.id===id)applyFilters();});document.addEventListener('change',function(e){if(e.target&&e.target.id===id)applyFilters();});});
+  byId('jb-timer').addEventListener('change',function(){byId('jb-custom-timer').style.display=this.value==='custom'?'block':'none';});
+
+  populateChapters();
+  loadLocal();
+  loadQuestions();
+})();
+</script>
 
 <!-- ═══════════ SUPERIQ AI CHATBOT ═══════════ -->
 <!-- KaTeX for math rendering -->
