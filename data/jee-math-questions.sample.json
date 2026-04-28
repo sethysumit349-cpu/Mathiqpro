@@ -1,0 +1,581 @@
+[
+  {
+    "id": "JM-0001",
+    "exam": "JEE Main",
+    "level": "Easy",
+    "chapter": "Quadratic Equations",
+    "topic": "Nature of roots",
+    "questionType": "MCQ",
+    "question": "For the equation x^2 - 5x + 6 = 0, which pair is the roots?",
+    "options": [
+      "(1,6)",
+      "(2,3)",
+      "(-2,-3)",
+      "(0,6)"
+    ],
+    "correctAnswer": "B",
+    "answerValue": "x = 2, 3",
+    "solution": [
+      "Factor the quadratic: x^2 - 5x + 6 = (x-2)(x-3).",
+      "Set each factor to zero.",
+      "Roots are x=2 and x=3."
+    ],
+    "formulaUsed": [
+      "ax^2+bx+c=0",
+      "Factorization method"
+    ],
+    "year": "2026",
+    "source": "Original JEE-style sample (MathIQ Pro)",
+    "marks": 4,
+    "negativeMarks": -1
+  },
+  {
+    "id": "JM-0002",
+    "exam": "JEE Main",
+    "level": "Medium",
+    "chapter": "Matrices",
+    "topic": "Order and multiplication",
+    "questionType": "MCQ",
+    "question": "If A is 2x3 and B is 3x2, then order of AB is:",
+    "options": [
+      "2x2",
+      "3x3",
+      "2x3",
+      "3x2"
+    ],
+    "correctAnswer": "A",
+    "answerValue": "2x2",
+    "solution": [
+      "For AB to exist, inner dimensions must match (3=3).",
+      "Order of AB is outer dimensions.",
+      "Hence AB is 2x2."
+    ],
+    "formulaUsed": [
+      "(m\u00d7n)(n\u00d7p) = m\u00d7p"
+    ],
+    "year": "2026",
+    "source": "Original JEE-style sample (MathIQ Pro)",
+    "marks": 4,
+    "negativeMarks": -1
+  },
+  {
+    "id": "JM-0003",
+    "exam": "JEE Main",
+    "level": "Easy",
+    "chapter": "Determinants",
+    "topic": "2x2 determinant",
+    "questionType": "MCQ",
+    "question": "det([[4,1],[2,3]]) equals:",
+    "options": [
+      "10",
+      "12",
+      "11",
+      "9"
+    ],
+    "correctAnswer": "A",
+    "answerValue": "10",
+    "solution": [
+      "For [[a,b],[c,d]], determinant = ad-bc.",
+      "Here ad=4\u00d73=12 and bc=1\u00d72=2.",
+      "So determinant = 12-2 = 10."
+    ],
+    "formulaUsed": [
+      "|A| = ad-bc"
+    ],
+    "year": "2026",
+    "source": "Original JEE-style sample (MathIQ Pro)",
+    "marks": 4,
+    "negativeMarks": -1
+  },
+  {
+    "id": "JM-0004",
+    "exam": "JEE Main",
+    "level": "Medium",
+    "chapter": "Limits and Continuity",
+    "topic": "Standard limits",
+    "questionType": "MCQ",
+    "question": "Evaluate lim(x\u21920) (sin 3x)/(x).",
+    "options": [
+      "0",
+      "1",
+      "3",
+      "undefined"
+    ],
+    "correctAnswer": "C",
+    "answerValue": "3",
+    "solution": [
+      "Write as 3\u00b7(sin 3x)/(3x).",
+      "As x\u21920, (sin 3x)/(3x)\u21921.",
+      "Therefore limit = 3."
+    ],
+    "formulaUsed": [
+      "lim(t\u21920) sin t / t = 1"
+    ],
+    "year": "2026",
+    "source": "Original JEE-style sample (MathIQ Pro)",
+    "marks": 4,
+    "negativeMarks": -1
+  },
+  {
+    "id": "JM-0005",
+    "exam": "JEE Main",
+    "level": "Medium",
+    "chapter": "Differentiation",
+    "topic": "Product rule",
+    "questionType": "MCQ",
+    "question": "d/dx (x^2 sin x) equals:",
+    "options": [
+      "2x sin x + x^2 cos x",
+      "x^2 cos x",
+      "2x cos x",
+      "sin x + x^2 cos x"
+    ],
+    "correctAnswer": "A",
+    "answerValue": "2x sin x + x^2 cos x",
+    "solution": [
+      "Use product rule (uv)'=u'v+uv'.",
+      "u=x^2 and v=sin x.",
+      "Derivative is 2x sin x + x^2 cos x."
+    ],
+    "formulaUsed": [
+      "(uv)' = u'v + uv'"
+    ],
+    "year": "2026",
+    "source": "Original JEE-style sample (MathIQ Pro)",
+    "marks": 4,
+    "negativeMarks": -1
+  },
+  {
+    "id": "JM-0006",
+    "exam": "JEE Main",
+    "level": "Hard",
+    "chapter": "Definite Integration",
+    "topic": "Basic definite integral",
+    "questionType": "Integer",
+    "question": "Value of \u222b(0 to 2) (3x^2) dx is ____.",
+    "options": [],
+    "correctAnswer": "8",
+    "answerValue": "8",
+    "solution": [
+      "Antiderivative of 3x^2 is x^3.",
+      "Apply limits: [x^3]0^2 = 8-0.",
+      "Final value is 8."
+    ],
+    "formulaUsed": [
+      "\u222bx^n dx = x^(n+1)/(n+1)"
+    ],
+    "year": "2026",
+    "source": "Original JEE-style sample (MathIQ Pro)",
+    "marks": 4,
+    "negativeMarks": -1
+  },
+  {
+    "id": "JA-0001",
+    "exam": "JEE Advanced",
+    "level": "Hard",
+    "chapter": "Complex Numbers",
+    "topic": "Modulus",
+    "questionType": "MCQ",
+    "question": "If z = 3 - 4i, then |z| is:",
+    "options": [
+      "5",
+      "7",
+      "1",
+      "25"
+    ],
+    "correctAnswer": "A",
+    "answerValue": "5",
+    "solution": [
+      "|a+ib| = sqrt(a^2+b^2).",
+      "Here a=3 and b=-4.",
+      "|z|=sqrt(9+16)=5."
+    ],
+    "formulaUsed": [
+      "|a+ib|=\u221a(a\u00b2+b\u00b2)"
+    ],
+    "year": "2026",
+    "source": "Original JEE-style sample (MathIQ Pro)",
+    "marks": 4,
+    "negativeMarks": -1
+  },
+  {
+    "id": "JA-0002",
+    "exam": "JEE Advanced",
+    "level": "Hard",
+    "chapter": "Sequences and Series",
+    "topic": "Geometric progression",
+    "questionType": "MCQ",
+    "question": "Sum of infinite GP 1 + 1/2 + 1/4 + ... is:",
+    "options": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "correctAnswer": "B",
+    "answerValue": "2",
+    "solution": [
+      "For |r|<1, S\u221e = a/(1-r).",
+      "Here a=1 and r=1/2.",
+      "S\u221e = 1/(1-1/2)=2."
+    ],
+    "formulaUsed": [
+      "S\u221e = a/(1-r)"
+    ],
+    "year": "2026",
+    "source": "Original JEE-style sample (MathIQ Pro)",
+    "marks": 4,
+    "negativeMarks": -1
+  },
+  {
+    "id": "JA-0003",
+    "exam": "JEE Advanced",
+    "level": "Medium",
+    "chapter": "Probability",
+    "topic": "Independent events",
+    "questionType": "MCQ",
+    "question": "If P(A)=0.5 and P(B)=0.2 are independent, P(A\u2229B) equals:",
+    "options": [
+      "0.1",
+      "0.7",
+      "0.3",
+      "0.5"
+    ],
+    "correctAnswer": "A",
+    "answerValue": "0.1",
+    "solution": [
+      "For independent events, P(A\u2229B)=P(A)P(B).",
+      "Compute 0.5\u00d70.2.",
+      "Answer is 0.1."
+    ],
+    "formulaUsed": [
+      "P(A\u2229B)=P(A)P(B)"
+    ],
+    "year": "2026",
+    "source": "Original JEE-style sample (MathIQ Pro)",
+    "marks": 4,
+    "negativeMarks": -1
+  },
+  {
+    "id": "JA-0004",
+    "exam": "JEE Advanced",
+    "level": "Hard",
+    "chapter": "Permutations and Combinations",
+    "topic": "nCr",
+    "questionType": "MCQ",
+    "question": "Value of 8C2 is:",
+    "options": [
+      "56",
+      "28",
+      "16",
+      "32"
+    ],
+    "correctAnswer": "B",
+    "answerValue": "28",
+    "solution": [
+      "Use nCr = n!/(r!(n-r)!).",
+      "8C2 = 8\u00d77/2\u00d71.",
+      "Result is 28."
+    ],
+    "formulaUsed": [
+      "nCr = n!/(r!(n-r)!)"
+    ],
+    "year": "2026",
+    "source": "Original JEE-style sample (MathIQ Pro)",
+    "marks": 4,
+    "negativeMarks": -1
+  },
+  {
+    "id": "JA-0005",
+    "exam": "JEE Advanced",
+    "level": "Hard",
+    "chapter": "Area Under Curve",
+    "topic": "Definite integration",
+    "questionType": "MCQ",
+    "question": "Area under y=x from x=0 to x=3 is:",
+    "options": [
+      "9",
+      "4.5",
+      "6",
+      "3"
+    ],
+    "correctAnswer": "B",
+    "answerValue": "4.5",
+    "solution": [
+      "Area = \u222b0^3 x dx.",
+      "Integral is x^2/2 from 0 to 3.",
+      "Value = 9/2 = 4.5."
+    ],
+    "formulaUsed": [
+      "Area = \u222b y dx"
+    ],
+    "year": "2026",
+    "source": "Original JEE-style sample (MathIQ Pro)",
+    "marks": 4,
+    "negativeMarks": -1
+  },
+  {
+    "id": "JA-0006",
+    "exam": "JEE Advanced",
+    "level": "Hard",
+    "chapter": "Parabola",
+    "topic": "Standard equation",
+    "questionType": "MCQ",
+    "question": "For y^2 = 4ax, if point (1,2) lies on parabola, a is:",
+    "options": [
+      "1",
+      "2",
+      "4",
+      "1/2"
+    ],
+    "correctAnswer": "A",
+    "answerValue": "1",
+    "solution": [
+      "Substitute x=1, y=2 in y^2=4ax.",
+      "4=4a.",
+      "Hence a=1."
+    ],
+    "formulaUsed": [
+      "Parabola: y\u00b2 = 4ax"
+    ],
+    "year": "2026",
+    "source": "Original JEE-style sample (MathIQ Pro)",
+    "marks": 4,
+    "negativeMarks": -1
+  },
+  {
+    "id": "IP-0001",
+    "exam": "IIT Mathematics",
+    "level": "Easy",
+    "chapter": "Straight Lines",
+    "topic": "Slope",
+    "questionType": "MCQ",
+    "question": "Slope of line through (1,2) and (3,8) is:",
+    "options": [
+      "2",
+      "3",
+      "4",
+      "6"
+    ],
+    "correctAnswer": "B",
+    "answerValue": "3",
+    "solution": [
+      "Slope m=(y2-y1)/(x2-x1).",
+      "=(8-2)/(3-1)=6/2.",
+      "So m=3."
+    ],
+    "formulaUsed": [
+      "m=(y2-y1)/(x2-x1)"
+    ],
+    "year": "2026",
+    "source": "Original JEE-style sample (MathIQ Pro)",
+    "marks": 4,
+    "negativeMarks": -1
+  },
+  {
+    "id": "IP-0002",
+    "exam": "IIT Mathematics",
+    "level": "Easy",
+    "chapter": "Circle",
+    "topic": "Radius",
+    "questionType": "MCQ",
+    "question": "Radius of circle x^2 + y^2 = 49 is:",
+    "options": [
+      "49",
+      "7",
+      "14",
+      "3.5"
+    ],
+    "correctAnswer": "B",
+    "answerValue": "7",
+    "solution": [
+      "Compare with x^2+y^2=r^2.",
+      "Here r^2=49.",
+      "So r=7."
+    ],
+    "formulaUsed": [
+      "x\u00b2+y\u00b2=r\u00b2"
+    ],
+    "year": "2026",
+    "source": "Original JEE-style sample (MathIQ Pro)",
+    "marks": 4,
+    "negativeMarks": -1
+  },
+  {
+    "id": "IP-0003",
+    "exam": "IIT Mathematics",
+    "level": "Medium",
+    "chapter": "Vectors",
+    "topic": "Dot product",
+    "questionType": "MCQ",
+    "question": "If a=(1,2,3), b=(2,0,1), then a\u00b7b equals:",
+    "options": [
+      "5",
+      "7",
+      "3",
+      "1"
+    ],
+    "correctAnswer": "A",
+    "answerValue": "5",
+    "solution": [
+      "Dot product a\u00b7b = x1x2+y1y2+z1z2.",
+      "=1\u00d72+2\u00d70+3\u00d71.",
+      "=2+0+3=5."
+    ],
+    "formulaUsed": [
+      "a\u00b7b = \u03a3(ai bi)"
+    ],
+    "year": "2026",
+    "source": "Original JEE-style sample (MathIQ Pro)",
+    "marks": 4,
+    "negativeMarks": -1
+  },
+  {
+    "id": "IP-0004",
+    "exam": "IIT Mathematics",
+    "level": "Medium",
+    "chapter": "Three Dimensional Geometry",
+    "topic": "Distance formula",
+    "questionType": "MCQ",
+    "question": "Distance between (1,1,1) and (4,5,1) is:",
+    "options": [
+      "5",
+      "4",
+      "3",
+      "6"
+    ],
+    "correctAnswer": "A",
+    "answerValue": "5",
+    "solution": [
+      "Use 3D distance formula.",
+      "sqrt((4-1)^2 + (5-1)^2 + (1-1)^2).",
+      "sqrt(9+16+0)=sqrt25=5."
+    ],
+    "formulaUsed": [
+      "d=\u221a((x2-x1)^2+(y2-y1)^2+(z2-z1)^2)"
+    ],
+    "year": "2026",
+    "source": "Original JEE-style sample (MathIQ Pro)",
+    "marks": 4,
+    "negativeMarks": -1
+  },
+  {
+    "id": "IP-0005",
+    "exam": "IIT Mathematics",
+    "level": "Medium",
+    "chapter": "Trigonometry",
+    "topic": "Identities",
+    "questionType": "Multiple Correct",
+    "question": "Which of the following are true for all \u03b8?",
+    "options": [
+      "sin^2\u03b8 + cos^2\u03b8 = 1",
+      "tan\u03b8 = sin\u03b8/cos\u03b8",
+      "sin(2\u03b8)=2sin\u03b8",
+      "1+tan^2\u03b8 = sec^2\u03b8"
+    ],
+    "correctAnswer": "A,B,D",
+    "answerValue": "A, B and D",
+    "solution": [
+      "Identity 1 is fundamental and always true.",
+      "Identity 2 is definition where cos\u03b8 \u2260 0.",
+      "sin(2\u03b8)=2sin\u03b8cos\u03b8, so option C is incomplete.",
+      "Identity 4 is standard trigonometric identity."
+    ],
+    "formulaUsed": [
+      "sin\u00b2\u03b8+cos\u00b2\u03b8=1",
+      "tan\u03b8=sin\u03b8/cos\u03b8",
+      "1+tan\u00b2\u03b8=sec\u00b2\u03b8"
+    ],
+    "year": "2026",
+    "source": "Original JEE-style sample (MathIQ Pro)",
+    "marks": 4,
+    "negativeMarks": -2
+  },
+  {
+    "id": "IP-0006",
+    "exam": "IIT Mathematics",
+    "level": "Hard",
+    "chapter": "Inverse Trigonometry",
+    "topic": "Principal values",
+    "questionType": "MCQ",
+    "question": "Principal value of tan^-1(1) is:",
+    "options": [
+      "\u03c0",
+      "\u03c0/2",
+      "\u03c0/4",
+      "3\u03c0/4"
+    ],
+    "correctAnswer": "C",
+    "answerValue": "\u03c0/4",
+    "solution": [
+      "tan(\u03c0/4)=1.",
+      "Principal value range of tan^-1 is (-\u03c0/2, \u03c0/2).",
+      "Hence tan^-1(1)=\u03c0/4."
+    ],
+    "formulaUsed": [
+      "Range(tan^-1 x)=(-\u03c0/2,\u03c0/2)"
+    ],
+    "year": "2026",
+    "source": "Original JEE-style sample (MathIQ Pro)",
+    "marks": 4,
+    "negativeMarks": -1
+  },
+  {
+    "id": "JM-0007",
+    "exam": "JEE Main",
+    "level": "Easy",
+    "chapter": "Sets, Relations and Functions",
+    "topic": "Set operations",
+    "questionType": "MCQ",
+    "question": "If A={1,2,3} and B={3,4}, then A\u222aB is:",
+    "options": [
+      "{1,2,3,4}",
+      "{3}",
+      "{1,2}",
+      "{4}"
+    ],
+    "correctAnswer": "A",
+    "answerValue": "{1,2,3,4}",
+    "solution": [
+      "Union includes all distinct elements from both sets.",
+      "Combine A and B and remove repetition.",
+      "Result is {1,2,3,4}."
+    ],
+    "formulaUsed": [
+      "A\u222aB = {x : x\u2208A or x\u2208B}"
+    ],
+    "year": "2026",
+    "source": "Original JEE-style sample (MathIQ Pro)",
+    "marks": 4,
+    "negativeMarks": -1
+  },
+  {
+    "id": "JM-0008",
+    "exam": "JEE Main",
+    "level": "Easy",
+    "chapter": "Statistics",
+    "topic": "Arithmetic mean",
+    "questionType": "MCQ",
+    "question": "Mean of 4, 8, 10 is:",
+    "options": [
+      "6",
+      "7",
+      "22/3",
+      "8"
+    ],
+    "correctAnswer": "C",
+    "answerValue": "22/3",
+    "solution": [
+      "Mean = (sum of observations)/(number of observations).",
+      "Sum = 4+8+10 = 22.",
+      "Mean = 22/3."
+    ],
+    "formulaUsed": [
+      "Mean = \u03a3x / n"
+    ],
+    "year": "2026",
+    "source": "Original JEE-style sample (MathIQ Pro)",
+    "marks": 4,
+    "negativeMarks": -1
+  }
+]
