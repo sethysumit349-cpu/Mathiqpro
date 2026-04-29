@@ -6728,8 +6728,76 @@ function cropTM(e){
     return html;
   }
 
+  // ── SuperIQ daily limit: 10 real AI requests per user per day (Supabase protected) ──
+  async function siqConsumeDailyCredit(){
+    try{
+      if(typeof getSupabase !== 'function'){
+        return {
+          allowed:false,
+          message:'SuperIQ daily limit needs Supabase setup. Please try again after setup.'
+        };
+      }
+
+      var sb = getSupabase();
+      if(!sb || !sb.auth){
+        return {
+          allowed:false,
+          message:'SuperIQ daily limit needs Supabase login. Please sign in again.'
+        };
+      }
+
+      var userRes = await sb.auth.getUser();
+      var user = userRes && userRes.data && userRes.data.user;
+
+      if(!user){
+        return {
+          allowed:false,
+          message:'Please sign in with your account to use SuperIQ AI.'
+        };
+      }
+
+      var res = await sb.rpc('consume_ai_credit');
+
+      if(res.error){
+        console.error('AI usage error:', res.error);
+        return {
+          allowed:false,
+          message:'Could not check your SuperIQ daily limit. Please run the Supabase SQL setup once, then try again.'
+        };
+      }
+
+      var row = Array.isArray(res.data) ? res.data[0] : res.data;
+
+      if(!row || row.allowed !== true){
+        return {
+          allowed:false,
+          message:'Daily SuperIQ limit reached. You can use SuperIQ 10 times per day. Try again tomorrow.'
+        };
+      }
+
+      return {
+        allowed:true,
+        used:Number(row.used || 0),
+        remaining:Number(row.remaining || 0)
+      };
+
+    }catch(e){
+      console.error('AI usage check failed:', e);
+      return {
+        allowed:false,
+        message:'AI limit check failed. Check your internet and try again.'
+      };
+    }
+  }
+
+  function siqResetBusy(){
+    siqBusy = false;
+    var btn = document.getElementById('siq-send');
+    if(btn) btn.style.opacity = '1';
+  }
+
   // ── Main send ──
-  window.siqSend = function(){
+  window.siqSend = async function(){
     if(!siqRequireAuth()) return;
     if(siqBusy) return;
     var inp = document.getElementById('siq-input');
@@ -6758,6 +6826,20 @@ function cropTM(e){
         document.getElementById('siq-send').style.opacity = '1';
       }, 400);
       return;
+    }
+
+    siqShowTyping();
+    var quota = await siqConsumeDailyCredit();
+    siqHideTyping();
+
+    if(!quota.allowed){
+      siqAddMsg('bot', quota.message);
+      siqResetBusy();
+      return;
+    }
+
+    if(quota.remaining <= 3 && typeof showToast === 'function'){
+      showToast('SuperIQ uses left today: ' + quota.remaining);
     }
 
     siqHistory.push({role:'user', content: txt});
