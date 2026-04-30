@@ -1024,6 +1024,79 @@ input,textarea{-webkit-user-select:text!important;user-select:text!important;fon
   }
 }
 
+
+/* Final Instagram Follow button fix */
+.topbar{
+  position:relative !important;
+  gap:8px !important;
+}
+.topbar-left-group{
+  display:flex !important;
+  align-items:center !important;
+  gap:6px !important;
+  flex:1 1 auto !important;
+  min-width:0 !important;
+}
+.topbar-left-group .miq-brand-logo{
+  flex:0 0 auto !important;
+  min-width:auto !important;
+  width:auto !important;
+}
+.miq-top-follow,
+.miq-insta-follow{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:5px !important;
+  margin-left:4px !important;
+  padding:7px 9px !important;
+  border-radius:999px !important;
+  border:1px solid rgba(244,114,182,.42) !important;
+  background:linear-gradient(135deg,rgba(244,114,182,.22),rgba(192,132,252,.16),rgba(56,189,248,.12)) !important;
+  color:#f8f7ff !important;
+  text-decoration:none !important;
+  font-family:var(--fn) !important;
+  font-size:11px !important;
+  font-weight:900 !important;
+  line-height:1 !important;
+  white-space:nowrap !important;
+  box-shadow:0 0 16px rgba(244,114,182,.16), inset 0 1px 0 rgba(255,255,255,.08) !important;
+  flex:0 0 auto !important;
+  opacity:1 !important;
+  visibility:visible !important;
+  pointer-events:auto !important;
+  z-index:50 !important;
+}
+.miq-top-follow svg,
+.miq-insta-follow svg{
+  width:17px !important;
+  height:17px !important;
+  display:block !important;
+  flex-shrink:0 !important;
+}
+.miq-top-follow span,
+.miq-insta-follow span{
+  display:inline !important;
+}
+.miq-top-follow:active,
+.miq-insta-follow:active{
+  transform:scale(.96) !important;
+}
+@media(max-width:380px){
+  .miq-brand-img{width:min(158px,43vw) !important;}
+  .miq-top-follow,
+  .miq-insta-follow{
+    font-size:10px !important;
+    padding:7px 8px !important;
+    gap:4px !important;
+  }
+  .miq-top-follow svg,
+  .miq-insta-follow svg{
+    width:16px !important;
+    height:16px !important;
+  }
+}
+
 </style>
 
 <meta name="theme-color" content="#0f172a">
@@ -1806,7 +1879,7 @@ html, body {
         <circle cx="12" cy="12" r="4" stroke="url(#miqInstagramGradient)" stroke-width="2"/>
         <circle cx="17.2" cy="6.8" r="1.25" fill="#f8f7ff"/>
       </svg>
-      <span>[←follow]</span>
+      <span>Follow</span>
     </a>
   </div>
 
